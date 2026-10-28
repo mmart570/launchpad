@@ -1,9 +1,15 @@
-import React from 'react'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
 
-const App = () => {
+function App() {
   return (
-    <div>LaunchPad</div>
-  )
+    <BrowserRouter>
+      {/* Keep page routing centralized so new screens can be added here. */}
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
