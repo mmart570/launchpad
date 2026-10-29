@@ -1,0 +1,243 @@
+/* Establish the page's base layout, dimensions, and typography. */
+.student-login-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  width: 100%;
+  font-family: Inter, system-ui, Arial, sans-serif;
+}
+
+/* Style the branded panel and its introductory content. */
+.login-brand-panel {
+  background-color: #0d203b;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 50px 40px 38px;
+}
+
+/* Keep the brand link visually consistent with the panel. */
+.login-logo {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+}
+
+/* Highlight the second part of the brand name. */
+.login-logo span {
+  color: #19c45b;
+}
+
+/* Center the brand message within the available panel space. */
+.login-brand-content {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+/* Set the heading's responsive size and spacing. */
+.login-brand-content h1 {
+  font-size: clamp(30px, 3.6vw, 45px);
+  font-weight: 800;
+  line-height: 1.13;
+  letter-spacing: -1.2px;
+  margin: 0 0 22px;
+}
+
+/* Improve readability of the supporting brand description. */
+.login-brand-content p {
+  color: #c5d0de;
+  font-size: 17px;
+  line-height: 1.5;
+  max-width: 420px;
+  margin: 0;
+}
+
+/* Style the panel's reserved footer or support text. */
+.login-panel-footer {
+  font-size: 13px;
+  color: #c5d0de;
+}
+
+/* Center the login card against a contrasting page background. */
+.login-form-panel {
+  background-color: #f3f6fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 30px;
+}
+
+/* Define the login card's dimensions, surface, and elevation. */
+.login-card {
+  width: 100%;
+  max-width: 375px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 29px;
+  box-shadow: 0 4px 16px rgba(13, 32, 59, 0.07);
+}
+
+/* Establish hierarchy for the login card heading. */
+.login-card h2 {
+  color: #0d203b;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+  margin: 0 0 6px;
+}
+
+/* Style the explanatory text below the card heading. */
+.login-subtitle {
+  color: #42536b;
+  font-size: 14px;
+  margin: 0 0 17px;
+}
+
+/* Visually distinguish account-creation confirmation messages. */
+.login-success-message {
+  background-color: #d9fbe5;
+  color: #188c47;
+  border-radius: 8px;
+  padding: 11px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+/* Arrange each form label and input in a vertical group. */
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 17px;
+}
+
+/* Make form labels clear and easy to scan. */
+.login-field label {
+  color: #26364b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Set consistent dimensions and appearance for credential inputs. */
+.login-field input {
+  width: 100%;
+  min-height: 39px;
+  padding: 9px 12px;
+  border: 1px solid #8d9cb3;
+  border-radius: 7px;
+  background-color: #ffffff;
+  color: #0d203b;
+  font-size: 14px;
+  outline: none;
+}
+
+/* Indicate which credential input currently has focus. */
+.login-field input:focus {
+  border-color: #2161ff;
+  box-shadow: 0 0 0 3px rgba(33, 97, 255, 0.12);
+}
+
+/* Align the remember option and password recovery link. */
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  font-size: 13px;
+}
+
+/* Align the remember checkbox with its label. */
+.remember-me {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #26364b;
+  cursor: pointer;
+}
+
+/* Apply the brand accent color to the checkbox control. */
+.remember-me input {
+  accent-color: #2161ff;
+}
+
+/* Style navigation links and provide a hover indicator. */
+.login-options a,
+.login-signup-text a {
+  color: #2161ff;
+  text-decoration: none;
+}
+
+.login-options a:hover,
+.login-signup-text a:hover {
+  text-decoration: underline;
+}
+
+/* Make validation and submission feedback visually prominent. */
+.login-error {
+  color: #c62828;
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+/* Style the primary action to span the available card width. */
+.login-submit-button {
+  width: 100%;
+  min-height: 43px;
+  border: none;
+  border-radius: 7px;
+  background-color: #2161ff;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Darken the primary action on hover to signal interactivity. */
+.login-submit-button:hover {
+  background-color: #1550e5;
+}
+
+/* Center the registration prompt below the login form. */
+.login-signup-text {
+  margin: 17px 0 0;
+  text-align: center;
+  color: #42536b;
+  font-size: 13px;
+}
+
+/* Stack the panels and adjust spacing on smaller screens. */
+@media (max-width: 600px) {
+  .student-login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-brand-panel {
+    padding: 25px 24px 35px;
+    gap: 35px;
+  }
+
+  .login-brand-content {
+    margin: 0;
+  }
+
+  .login-brand-content h1 {
+    font-size: 32px;
+  }
+
+  .login-brand-content p {
+    font-size: 15px;
+  }
+
+  /* Hide the reserved footer to preserve space on narrow screens. */
+  .login-panel-footer {
+    display: none;
+  }
+
+  .login-form-panel {
+    padding: 45px 20px;
+  }
+}
