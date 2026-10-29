@@ -2,13 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/StudentLogin.css";
 
-function StudentLogin({ accountCreated }) {
+function StudentLogin({ accountCreated = false }) {
   // Store the current form values and submission feedback.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
-  const [accountCreated] = useState(false);
 
   // Validate required credentials and report the current authentication status.
   function handleSubmit(event) {
