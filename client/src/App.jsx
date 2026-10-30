@@ -4,21 +4,25 @@ import LandingPage from "./pages/LandingPage";
 import StudentLogin from "./pages/StudentLogin";
 import StudentDashboard from "./pages/StudentDashboard";
 import WorkOrderDetails from "./pages/WorkOrderDetails";
+import BusinessPage from "./pages/BusinessPage";
 
-// Configure the application's client-side routes.
+// Configure client-side routes for student and business pages.
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Show the landing page at the root URL. */}
+        {/* Render the landing page at the root URL. */}
         <Route path="/" element={<LandingPage />} />
 
-        {/* Provide routes for student account and project pages. */}
+        {/* Provide routes for student login and dashboard pages. */}
         <Route path="/login" element={<StudentLogin />} />
         <Route path="/dashboard" element={<StudentDashboard />} />
 
-        {/* Pass the selected work order ID to its details page. */}
+        {/* Show details for the work order identified in the URL. */}
         <Route path="/work-orders/:id" element={<WorkOrderDetails />} />
+
+        {/* Provide the business work order posting page. */}
+        <Route path="/businesses" element={<BusinessPage />} />
       </Routes>
     </BrowserRouter>
   );
