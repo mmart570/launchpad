@@ -1,0 +1,183 @@
+/* Cover the page with a dimmed layer and center the profile dialog. */
+.business-info-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: rgba(13, 32, 59, 0.7);
+}
+
+/* Define the dialog's size, surface, accent, and elevation. */
+.business-info-modal {
+  width: 100%;
+  max-width: 510px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border-top: 4px solid #2161ff;
+  padding: 26px 28px 24px;
+  box-shadow: 0 16px 45px rgba(13, 32, 59, 0.25);
+  color: #0d203b;
+  font-family: Inter, system-ui, Arial, sans-serif;
+}
+
+/* Align business identity details with the close control. */
+.business-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+/* Group the business avatar and identifying text. */
+.business-info-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Display the business initials in a branded avatar. */
+.business-info-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 9px;
+  background-color: #0d203b;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+/* Establish a clear heading hierarchy for the business profile. */
+.business-info-identity h2 {
+  margin: 0 0 5px;
+  color: #0d203b;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+/* Distinguish the business verification status. */
+.business-info-verified {
+  margin: 0;
+  color: #188c47;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Style the accessible control that dismisses the dialog. */
+.business-info-close {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #0d203b;
+  font-size: 21px;
+  cursor: pointer;
+}
+
+/* Provide hover feedback for the close control. */
+.business-info-close:hover {
+  background-color: #f3f6fa;
+}
+
+/* Set readable typography for the business description. */
+.business-info-description {
+  color: #42536b;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 22px;
+}
+
+/* Arrange business attributes in a responsive information grid. */
+.business-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 28px;
+  margin-bottom: 24px;
+}
+
+/* Stack each attribute label above its value. */
+.business-info-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Emphasize labels in the business information grid. */
+.business-info-grid strong {
+  color: #26364b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* Style business attribute values for comfortable reading. */
+.business-info-grid span {
+  color: #42536b;
+  font-size: 13px;
+}
+
+/* Align the dialog's primary and secondary actions. */
+.business-info-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Apply shared sizing and interaction styling to dialog actions. */
+.business-info-actions button {
+  min-height: 43px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Highlight the action for starting a business conversation. */
+.business-info-message {
+  background-color: #2161ff;
+  border: 1px solid #2161ff;
+  color: #ffffff;
+}
+
+/* Darken the message action on hover. */
+.business-info-message:hover {
+  background-color: #1550e5;
+}
+
+/* Style the secondary action for returning to work order details. */
+.business-info-back {
+  background-color: #ffffff;
+  border: 1.5px solid #2161ff;
+  color: #2161ff;
+}
+
+/* Provide hover feedback for the return action. */
+.business-info-back:hover {
+  background-color: #eaf0ff;
+}
+
+/* Reduce dialog spacing and stack actions on narrow screens. */
+@media (max-width: 480px) {
+  .business-info-modal {
+    padding: 20px;
+  }
+
+  .business-info-identity h2 {
+    font-size: 18px;
+  }
+
+  .business-info-grid {
+    gap: 14px;
+  }
+
+  .business-info-actions {
+    grid-template-columns: 1fr;
+  }
+}

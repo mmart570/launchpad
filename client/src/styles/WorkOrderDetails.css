@@ -462,3 +462,18 @@
     font-size: 12px;
   }
 }
+
+/* Style the business name as an interactive link within the overview. */
+.work-business-link {
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: #2161ff;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Underline the business link on hover to indicate interactivity. */
+.work-business-link:hover {
+  text-decoration: underline;
+}

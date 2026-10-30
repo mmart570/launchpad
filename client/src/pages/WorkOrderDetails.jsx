@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import "../styles/WorkOrderDetails.css";
+import BusinessInformation from "../components/BusinessInformation";
 
 function WorkOrderDetails() {
   // Read the work order identifier from the current route.
@@ -9,6 +10,9 @@ function WorkOrderDetails() {
   // Track the selected content tab and provide action feedback.
   const [activeTab, setActiveTab] = useState("details");
   const [notice, setNotice] = useState("");
+
+  // Control whether the business profile dialog is visible.
+  const [showBusinessInfo, setShowBusinessInfo] = useState(false);
 
   // Display a placeholder until application submission is connected.
   function handleApply() {
@@ -126,8 +130,15 @@ function WorkOrderDetails() {
                 <div className="work-overview-grid">
                   <div>
                     <p>
-                      <strong>Business:</strong> [Business name]{" "}
-                      <span className="work-verified">✓</span>
+                      <strong>Business:</strong>{" "}
+                      <button
+                        type="button"
+                        className="work-business-link"
+                        onClick={() => setShowBusinessInfo(true)}
+                      >
+                        [Business name]
+                      </button>
+                      <span className="work-verified"> ✓</span>
                     </p>
                     <p>[Business address]</p>
                     <p className="work-muted">
@@ -316,6 +327,17 @@ function WorkOrderDetails() {
           </section>
         )}
       </main>
+
+      {/* Show the business profile dialog when requested. */}
+      {showBusinessInfo && (
+        <BusinessInformation
+          onClose={() => setShowBusinessInfo(false)}
+          onMessage={() => {
+            setShowBusinessInfo(false);
+            handleMessage();
+          }}
+        />
+      )}
     </div>
   );
 }
