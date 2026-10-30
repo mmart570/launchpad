@@ -1,21 +1,24 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// Import the page components used by the application's routes.
 import LandingPage from "./pages/LandingPage";
 import StudentLogin from "./pages/StudentLogin";
 import StudentDashboard from "./pages/StudentDashboard";
+import WorkOrderDetails from "./pages/WorkOrderDetails";
 
-// Set up client-side navigation for the main application pages.
+// Configure the application's client-side routes.
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Render the landing page at the root URL. */}
+        {/* Show the landing page at the root URL. */}
         <Route path="/" element={<LandingPage />} />
 
-        {/* Render student login and dashboard pages at their respective URLs. */}
+        {/* Provide routes for student account and project pages. */}
         <Route path="/login" element={<StudentLogin />} />
         <Route path="/dashboard" element={<StudentDashboard />} />
+
+        {/* Pass the selected work order ID to its details page. */}
+        <Route path="/work-orders/:id" element={<WorkOrderDetails />} />
       </Routes>
     </BrowserRouter>
   );

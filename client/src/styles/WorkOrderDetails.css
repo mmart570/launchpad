@@ -1,0 +1,464 @@
+/* Set page-wide colors, typography, and minimum viewport height. */
+.work-details-page {
+  min-height: 100vh;
+  background: #f3f6fa;
+  color: #0d203b;
+  font-family: Inter, system-ui, Arial, sans-serif;
+}
+
+/* Align brand navigation and the dashboard return link. */
+.work-details-navbar {
+  min-height: 62px;
+  padding: 0 46px;
+  background: #0d203b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Keep the brand link consistent with the site's visual identity. */
+.work-details-logo {
+  color: #fff;
+  text-decoration: none;
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.work-details-logo span {
+  color: #19c45b;
+}
+
+/* Style the return link for visibility against the dark header. */
+.work-details-back {
+  color: #c5d0de;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.work-details-back:hover {
+  color: #fff;
+}
+
+/* Present key work order information in a horizontal summary strip. */
+.work-details-summary {
+  display: flex;
+  align-items: center;
+  gap: 56px;
+  min-height: 82px;
+  padding: 15px max(46px, calc((100% - 1200px) / 2));
+  background: #fff;
+}
+
+/* Stack summary labels and values for quick scanning. */
+.work-summary-item,
+.work-summary-contact > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 14px;
+}
+
+.work-summary-item strong,
+.work-summary-contact strong {
+  color: #26364b;
+}
+
+/* Use color and weight to emphasize payment and time details. */
+.work-summary-pay,
+.work-money-green {
+  color: #188c47;
+  font-weight: 800;
+}
+
+.work-summary-time {
+  color: #2161ff;
+  font-weight: 700;
+}
+
+/* Align the business contact avatar and name. */
+.work-summary-contact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Display contact initials in a circular profile indicator. */
+.work-contact-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2161ff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* Constrain the details page and establish its main spacing. */
+.work-details-main {
+  max-width: 1290px;
+  margin: 0 auto;
+  padding: 24px 46px 42px;
+}
+
+/* Arrange work order actions with consistent spacing. */
+.work-details-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* Set shared dimensions and interactive styling for action buttons. */
+.work-details-actions button {
+  min-height: 45px;
+  padding: 0 22px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Highlight the primary application action. */
+.work-action-apply {
+  border: none;
+  background: #1cc65e;
+  color: #0d203b;
+}
+
+.work-action-apply:hover {
+  background: #17b653;
+}
+
+/* Distinguish secondary actions from the primary action. */
+.work-action-outline {
+  border: 1.5px solid #2161ff;
+  background: #fff;
+  color: #2161ff;
+}
+
+.work-action-outline:hover {
+  background: #eaf0ff;
+}
+
+/* Make action feedback easy to identify and read. */
+.work-details-notice {
+  padding: 12px 15px;
+  border-radius: 8px;
+  background: #e8edff;
+  color: #244a9b;
+  font-size: 14px;
+  margin: 0 0 18px;
+}
+
+/* Create a two-option navigation area for details and messages. */
+.work-details-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fff;
+  margin-bottom: 24px;
+  box-shadow: 0 3px 12px rgba(13, 32, 59, 0.04);
+}
+
+/* Set the shared appearance and size of each tab control. */
+.work-details-tabs button {
+  min-height: 47px;
+  border: none;
+  background: transparent;
+  color: #26364b;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Mark the selected tab with a background and accent border. */
+.work-details-tabs button.active {
+  background: #e2e8f0;
+  border-bottom: 3px solid #2161ff;
+}
+
+/* Show the message count in a compact circular badge. */
+.work-message-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1cc65e;
+  color: #0d203b;
+  font-size: 12px;
+}
+
+/* Separate primary details from the supporting payment column. */
+.work-details-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(290px, 1fr);
+  gap: 22px;
+}
+
+/* Stack cards vertically within each details column. */
+.work-details-left,
+.work-details-right {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Give information sections a consistent card surface and elevation. */
+.work-info-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 14px rgba(13, 32, 59, 0.06);
+}
+
+/* Separate card headings from their supporting content. */
+.work-info-card h2 {
+  margin: 0;
+  padding: 22px 24px;
+  border-bottom: 1px solid #e1e7ef;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0d203b;
+}
+
+/* Set readable spacing and text color for card content. */
+.work-info-body {
+  padding: 22px 24px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #42536b;
+}
+
+.work-info-body p {
+  margin: 0 0 7px;
+}
+
+.work-info-body strong {
+  color: #26364b;
+}
+
+/* Arrange work order overview information in two columns. */
+.work-overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 22px 24px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #42536b;
+}
+
+.work-overview-grid p {
+  margin: 0 0 6px;
+}
+
+.work-overview-grid strong {
+  color: #26364b;
+}
+
+/* Reduce emphasis for supplementary explanatory text. */
+.work-muted {
+  font-size: 12px;
+}
+
+/* Use a green indicator to identify verified businesses. */
+.work-verified {
+  color: #188c47;
+  font-weight: 800;
+}
+
+/* Present work types as compact category tags. */
+.work-tag {
+  display: inline-block;
+  padding: 5px 10px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  color: #26364b;
+  margin-left: 4px;
+}
+
+/* Space scope, deliverables, and requirements sections apart. */
+.work-service-description {
+  display: flex;
+  flex-direction: column;
+  gap: 23px;
+}
+
+/* Distinguish the payment details column and its headings. */
+.work-payment-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 24px;
+}
+
+.work-payment-heading h2 {
+  border: none;
+  padding-right: 0;
+}
+
+.work-payment-heading > span {
+  font-size: 12px;
+  color: #42536b;
+}
+
+/* Highlight payment terms and make their supporting link visible. */
+.work-payment-terms {
+  background: #e7efff;
+  padding: 22px 24px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.work-payment-terms h3 {
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+
+.work-payment-terms p {
+  margin: 0 0 5px;
+}
+
+.work-payment-terms a {
+  display: inline-block;
+  margin-top: 5px;
+  color: #2161ff;
+  text-decoration: none;
+}
+
+/* Add consistent spacing around labor and estimated hours. */
+.work-payment-section {
+  padding: 22px 24px;
+}
+
+/* Align the labor heading and amount on one row. */
+.work-payment-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.work-payment-title h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.work-payment-title strong {
+  color: #188c47;
+  font-size: 21px;
+}
+
+/* Align each payment label with its corresponding value. */
+.work-payment-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 14px;
+  color: #42536b;
+  margin: 8px 0;
+}
+
+.work-payment-row span:last-child {
+  white-space: nowrap;
+}
+
+/* Separate individual charges with borders and balanced spacing. */
+.work-payment-line {
+  padding: 18px 24px;
+  border-top: 1px solid #e1e7ef;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+/* Identify deductions using a contrasting red color. */
+.work-money-red {
+  color: #d32727;
+}
+
+/* Refine spacing within the payment summary card. */
+.work-total-card .work-info-body {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+/* Emphasize the final total beneath the itemized charges. */
+.work-total-row {
+  border-top: 1px solid #e1e7ef;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.work-total-row h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.work-total-row strong {
+  color: #188c47;
+  font-size: 21px;
+}
+
+/* Keep schedule details compact and easy to scan. */
+.work-schedule p {
+  margin: 3px 0;
+}
+
+/* Reserve space for the messages panel when its tab is active. */
+.work-messages-panel {
+  min-height: 220px;
+}
+
+/* Collapse detail columns and wrap the summary on medium screens. */
+@media (max-width: 850px) {
+  .work-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .work-details-summary {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+}
+
+/* Reduce page spacing and simplify layouts on narrow screens. */
+@media (max-width: 600px) {
+  .work-details-navbar {
+    padding: 0 20px;
+  }
+
+  .work-details-main {
+    padding: 20px;
+  }
+
+  .work-details-summary {
+    padding: 18px 20px;
+  }
+
+  .work-details-actions button {
+    width: 100%;
+  }
+
+  .work-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .work-info-card h2 {
+    font-size: 19px;
+  }
+
+  .work-payment-line {
+    font-size: 12px;
+  }
+}
