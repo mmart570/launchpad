@@ -1,0 +1,284 @@
+/* Establish the page's base layout, dimensions, and typography (matches StudentLogin). */
+.su-page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+    width: 100%;
+    font-family: Inter, system-ui, Arial, sans-serif;
+  }
+  
+  /* Style the branded panel and its introductory content. */
+  .su-brand {
+    background-color: #0d203b;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    padding: 50px 40px 38px;
+  }
+  
+  /* Keep the brand link visually consistent with the panel. */
+  .su-logo {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -0.7px;
+  }
+  
+  .su-logo span {
+    color: #19c45b;
+  }
+  
+  /* Center the brand message within the available panel space. */
+  .su-brand-content {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  
+  .su-brand-content h1 {
+    font-size: clamp(30px, 3.6vw, 45px);
+    font-weight: 800;
+    line-height: 1.13;
+    letter-spacing: -1.2px;
+    margin: 0 0 22px;
+  }
+  
+  .su-brand-content p {
+    color: #c5d0de;
+    font-size: 17px;
+    line-height: 1.5;
+    max-width: 420px;
+    margin: 0;
+  }
+  
+  .su-brand-footer,
+  .su-brand-footer a {
+    font-size: 13px;
+    color: #c5d0de;
+    text-decoration: none;
+  }
+  
+  .su-brand-footer a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Center the sign up card against a contrasting page background. */
+  .su-panel {
+    background-color: #f3f6fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 30px;
+  }
+  
+  .su-card {
+    width: 100%;
+    max-width: 420px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 29px;
+    box-shadow: 0 4px 16px rgba(13, 32, 59, 0.07);
+  }
+  
+  .su-card h2 {
+    color: #0d203b;
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: -0.7px;
+    margin: 0 0 6px;
+  }
+  
+  .su-lead {
+    color: #42536b;
+    font-size: 14px;
+    margin: 0 0 17px;
+  }
+  
+  /* Account-creation and failure messages. */
+  .su-success {
+    background-color: #d9fbe5;
+    color: #188c47;
+    border-radius: 8px;
+    padding: 11px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  
+  .su-failure {
+    color: #c62828;
+    font-size: 13px;
+    margin: 0 0 12px;
+  }
+  
+  /* Arrange each form label and input in a vertical group. */
+  .su-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 17px;
+  }
+  
+  .su-row {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .su-row .su-field {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .su-field label {
+    color: #26364b;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  
+  /* Inputs and the graduation year dropdown share one appearance. */
+  .su-field input,
+  .su-field select {
+    width: 100%;
+    min-height: 39px;
+    padding: 9px 12px;
+    border: 1px solid #8d9cb3;
+    border-radius: 7px;
+    background-color: #ffffff;
+    color: #0d203b;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+  }
+  
+  .su-field input:focus,
+  .su-field select:focus {
+    border-color: #2161ff;
+    box-shadow: 0 0 0 3px rgba(33, 97, 255, 0.12);
+  }
+  
+  .su-field input[aria-invalid="true"],
+  .su-field select[aria-invalid="true"] {
+    border-color: #c62828;
+  }
+  
+  .su-error {
+    margin: 0;
+    font-size: 12px;
+    color: #c62828;
+  }
+  
+  .su-hint {
+    margin: 0;
+    font-size: 12px;
+    color: #42536b;
+  }
+  
+  /* Position the show/hide button inside the password input. */
+  .su-pw {
+    position: relative;
+  }
+  
+  .su-pw input {
+    padding-right: 70px;
+  }
+  
+  .su-toggle {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    transform: translateY(-50%);
+    min-height: 32px;
+    padding: 0 10px;
+    background: none;
+    border: 0;
+    border-radius: 6px;
+    color: #2161ff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .su-toggle:focus-visible,
+  .su-btn:focus-visible,
+  .su-page a:focus-visible {
+    outline: 3px solid #2161ff;
+    outline-offset: 2px;
+  }
+  
+  /* Primary action spans the available card width. */
+  .su-btn {
+    width: 100%;
+    min-height: 43px;
+    border: none;
+    border-radius: 7px;
+    background-color: #2161ff;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  
+  .su-btn:hover {
+    background-color: #1550e5;
+  }
+  
+  .su-btn:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+  }
+  
+  /* Registration prompt below the form. */
+  .su-alt {
+    margin: 17px 0 0;
+    text-align: center;
+    color: #42536b;
+    font-size: 13px;
+  }
+  
+  .su-alt a {
+    color: #2161ff;
+    text-decoration: none;
+  }
+  
+  .su-alt a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Stack the panels and adjust spacing on smaller screens. */
+  @media (max-width: 600px) {
+    .su-page {
+      grid-template-columns: 1fr;
+    }
+  
+    .su-brand {
+      padding: 25px 24px 35px;
+      gap: 35px;
+    }
+  
+    .su-brand-content {
+      margin: 0;
+    }
+  
+    .su-brand-content h1 {
+      font-size: 32px;
+    }
+  
+    .su-brand-content p {
+      font-size: 15px;
+    }
+  
+    .su-brand-footer {
+      display: none;
+    }
+  
+    .su-panel {
+      padding: 45px 20px;
+    }
+  
+    .su-row {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
