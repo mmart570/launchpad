@@ -54,7 +54,7 @@ function StudentDashboard() {
 
         <nav className="dashboard-nav-links">
           <Link to="/dashboard">Dashboard</Link>
-          <Link to="/applications">My applications</Link>
+          <Link to="/my-applications">My applications</Link>
           <div className="dashboard-avatar" aria-label="Student profile">
             AB
           </div>

@@ -1,0 +1,338 @@
+.my-applications-page {
+  min-height: 100vh;
+  background-color: #f3f6fa;
+  color: #0d203b;
+  font-family: Inter, system-ui, Arial, sans-serif;
+}
+
+/* Lay out the site brand and student navigation links. */
+
+.my-applications-navbar {
+  min-height: 90px;
+  padding: 0 60px;
+  background-color: #0d203b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.my-applications-logo {
+  color: #ffffff;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  text-decoration: none;
+}
+
+.my-applications-logo span {
+  color: #19c45b;
+}
+
+.my-applications-nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.my-applications-nav > a {
+  color: #c5d0de;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.my-applications-nav > a.active {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.my-applications-nav > a:not(.my-applications-avatar):hover {
+  color: #ffffff;
+}
+
+.my-applications-nav .my-applications-avatar {
+  width: 49px;
+  height: 49px;
+  border-radius: 50%;
+  background-color: #2161ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Constrain the page content and establish its main spacing. */
+
+.my-applications-main {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 48px 60px 90px;
+}
+
+.my-applications-heading h1 {
+  font-size: 39px;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+.my-applications-heading p {
+  font-size: 19px;
+  color: #42536b;
+  margin: 0;
+}
+
+/* Present status options as selectable pill-shaped controls. */
+
+.my-applications-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 30px 0 28px;
+}
+
+.my-applications-filters button {
+  min-height: 53px;
+  padding: 0 23px;
+  background-color: #ffffff;
+  border: 1px solid #d4deeb;
+  border-radius: 30px;
+  color: #20242b;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.my-applications-filters button.active {
+  background-color: #0d203b;
+  border-color: #0d203b;
+  color: #ffffff;
+}
+
+.my-applications-filters button:focus-visible,
+.my-applications-page a:focus-visible {
+  outline: 3px solid #2161ff;
+  outline-offset: 3px;
+}
+
+/* Group application rows into a single elevated list surface. */
+
+.my-applications-list {
+  background-color: #ffffff;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 17px rgba(13, 32, 59, 0.06);
+}
+
+.my-application-row {
+  min-height: 93px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 29px;
+  border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+.my-application-row:last-child {
+  border-bottom: none;
+}
+
+.my-application-business-icon {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  background-color: #0d203b;
+  border-radius: 11px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* Let application details use remaining space before status and actions. */
+.my-application-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.my-application-info h2 {
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 800;
+  margin: 0 0 3px;
+}
+
+.my-application-info p {
+  color: #42536b;
+  font-size: 16px;
+  margin: 0;
+}
+
+.my-application-status {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 20px;
+  padding: 6px 15px;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-pending {
+  background-color: #fff3c4;
+  color: #a44e13;
+}
+
+.status-accepted {
+  background-color: #d8f9e5;
+  color: #178747;
+}
+
+.status-not-selected {
+  background-color: #e2e8f0;
+  color: #42536b;
+}
+
+/* Keep the details link visually distinct and easy to activate. */
+.my-application-details {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 151px;
+  min-height: 53px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  border: 1.5px solid #2161ff;
+  border-radius: 11px;
+  color: #2161ff;
+  background-color: #ffffff;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.my-application-details:hover {
+  background-color: #eef3ff;
+}
+
+.my-applications-empty {
+  padding: 40px 24px;
+  color: #42536b;
+  text-align: center;
+  font-size: 16px;
+}
+
+/* Reflow navigation and application rows for tablet-sized screens. */
+
+@media (max-width: 900px) {
+  .my-applications-navbar {
+    padding: 18px 25px;
+    flex-wrap: wrap;
+  }
+
+  .my-applications-nav {
+    gap: 18px;
+  }
+
+  .my-applications-main {
+    padding: 35px 25px 70px;
+  }
+
+  .my-application-row {
+    flex-wrap: wrap;
+  }
+
+  .my-application-info {
+    flex-basis: calc(100% - 80px);
+  }
+
+  .my-application-status {
+    margin-left: 74px;
+  }
+
+  .my-application-details {
+    margin-left: auto;
+  }
+}
+
+/* Tighten navigation, typography, and row spacing on phones. */
+@media (max-width: 600px) {
+  .my-applications-navbar {
+    padding: 20px;
+  }
+
+  .my-applications-logo {
+    font-size: 24px;
+  }
+
+  .my-applications-nav {
+    gap: 13px;
+    flex-wrap: wrap;
+  }
+
+  .my-applications-nav > a {
+    font-size: 13px;
+  }
+
+  .my-applications-nav .my-applications-avatar {
+    width: 39px;
+    height: 39px;
+    font-size: 13px;
+  }
+
+  .my-applications-main {
+    padding: 30px 18px 60px;
+  }
+
+  .my-applications-heading h1 {
+    font-size: 30px;
+  }
+
+  .my-applications-heading p {
+    font-size: 16px;
+  }
+
+  .my-applications-filters button {
+    min-height: 43px;
+    padding: 0 17px;
+    font-size: 14px;
+  }
+
+  .my-application-row {
+    gap: 12px;
+    padding: 18px;
+  }
+
+  .my-application-info {
+    flex-basis: calc(100% - 70px);
+  }
+
+  .my-application-info h2 {
+    font-size: 17px;
+  }
+
+  .my-application-info p {
+    font-size: 13px;
+  }
+
+  .my-application-status {
+    margin-left: 0;
+  }
+
+  .my-application-details {
+    min-width: 125px;
+    min-height: 43px;
+    font-size: 14px;
+  }
+}
