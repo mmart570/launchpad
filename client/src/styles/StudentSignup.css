@@ -71,6 +71,7 @@
   padding: 48px 30px;
 }
 
+/* Keep the signup form readable and centered within its panel. */
 .su-card {
   width: 100%;
   max-width: 420px;
@@ -94,7 +95,7 @@
   margin: 0 0 17px;
 }
 
-/* Account-creation and failure messages. */
+/* Distinguish account-creation feedback from inline field validation. */
 .su-success {
   background-color: #d9fbe5;
   color: #188c47;
@@ -129,6 +130,7 @@
   min-width: 0;
 }
 
+/* Give field labels and validation messages a clear visual hierarchy. */
 .su-field label {
   color: #26364b;
   font-size: 13px;
@@ -156,6 +158,7 @@
   box-shadow: 0 0 0 3px rgba(33, 97, 255, 0.12);
 }
 
+/* Highlight invalid controls and keep inline guidance compact. */
 .su-field input[aria-invalid="true"],
 .su-field select[aria-invalid="true"] {
   border-color: #c62828;
@@ -173,7 +176,7 @@
   color: #42536b;
 }
 
-/* Position the show/hide button inside the password input. */
+/* Place the password visibility control within its input wrapper. */
 .su-pw {
   position: relative;
 }
@@ -199,6 +202,7 @@
   cursor: pointer;
 }
 
+/* Make keyboard focus visible on interactive controls and links. */
 .su-toggle:focus-visible,
 .su-btn:focus-visible,
 .su-page a:focus-visible {
@@ -280,5 +284,62 @@
   .su-row {
     flex-direction: column;
     gap: 0;
+  }
+}
+
+/* Refine panel proportions and control sizing for wider screens. */
+@media (min-width: 901px) {
+  .su-page {
+    grid-template-columns: 52% 48%;
+  }
+
+  .su-brand {
+    padding: 55px 65px 70px;
+  }
+
+  .su-brand-content h1 {
+    font-size: clamp(42px, 3.5vw, 54px);
+    max-width: 650px;
+  }
+
+  .su-brand-content p {
+    font-size: 20px;
+    max-width: 600px;
+  }
+
+  .su-card {
+    max-width: 520px;
+    padding: 42px 38px 36px;
+  }
+
+  .su-card h2 {
+    font-size: 34px;
+  }
+
+  .su-lead {
+    font-size: 17px;
+    margin-bottom: 20px;
+  }
+
+  .su-field label {
+    font-size: 16px;
+  }
+
+  .su-field input,
+  .su-field select {
+    min-height: 52px;
+    font-size: 16px;
+    border-radius: 11px;
+  }
+
+  .su-btn {
+    min-height: 57px;
+    font-size: 18px;
+    border-radius: 10px;
+  }
+
+  .su-alt {
+    font-size: 17px;
+    margin-top: 20px;
   }
 }

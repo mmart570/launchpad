@@ -6,6 +6,7 @@ import StudentDashboard from "./pages/StudentDashboard";
 import WorkOrderDetails from "./pages/WorkOrderDetails";
 import BusinessPage from "./pages/BusinessPage";
 import StudentSignup from "./pages/StudentSignup";
+import BusinessAuth from "./pages/BusinessAuth";
 
 // Configure client-side routes for student and business pages.
 function App() {
@@ -27,6 +28,9 @@ function App() {
 
         {/* Provide the business work order posting page. */}
         <Route path="/businesses" element={<BusinessPage />} />
+
+        {/* Provide the business authentication page. */}
+        <Route path="/business-auth" element={<BusinessAuth />} />
       </Routes>
     </BrowserRouter>
   );

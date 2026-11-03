@@ -1,0 +1,165 @@
+/* Center the account flow on a full-height neutral background. */
+.business-auth-page {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f3f6fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  font-family: Inter, system-ui, Arial, sans-serif;
+}
+
+.business-auth-container {
+  width: 100%;
+  max-width: 510px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Match the business wordmark to the shared LaunchPad branding. */
+.business-auth-logo {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: #0d203b;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  text-decoration: none;
+}
+
+.business-auth-logo span {
+  color: #19c45b;
+}
+
+.business-auth-logo small {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* Keep the account form and its tab controls together in one card. */
+.business-auth-card {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(13, 32, 59, 0.07);
+  overflow: hidden;
+}
+
+.business-auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #e3e9f1;
+}
+
+/* Keep the login and signup options visually balanced. */
+.business-auth-tabs button {
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 16px 12px;
+  color: #0d203b;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.business-auth-tabs button.active {
+  border-bottom-color: #2161ff;
+  color: #0d203b;
+}
+
+/* Lay out form fields consistently inside the account card. */
+.business-auth-form {
+  padding: 28px 30px 0;
+}
+
+.business-auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 20px;
+}
+
+.business-auth-field label {
+  color: #26364b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Make text inputs full-width and clearly indicate keyboard focus. */
+.business-auth-field input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  box-sizing: border-box;
+  border: 1px solid #9eacc0;
+  border-radius: 7px;
+  background-color: #ffffff;
+  color: #0d203b;
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+}
+
+.business-auth-field input:focus {
+  border-color: #2161ff;
+  box-shadow: 0 0 0 3px rgba(33, 97, 255, 0.12);
+}
+
+/* Emphasize the primary form action and its hover state. */
+.business-auth-submit {
+  width: 100%;
+  min-height: 49px;
+  border: 0;
+  border-radius: 7px;
+  background-color: #2161ff;
+  color: #ffffff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.business-auth-submit:hover {
+  background-color: #1550e5;
+}
+
+/* Center status feedback beneath the primary form action. */
+.business-auth-notice {
+  margin: 12px 0 0;
+  color: #42536b;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Separate the signup review note from the form controls. */
+.business-auth-footer {
+  margin: 18px 30px 24px;
+  color: #42536b;
+  font-size: 13px;
+  text-align: left;
+}
+
+/* Tighten card spacing for small screens. */
+@media (max-width: 600px) {
+  .business-auth-container {
+    max-width: 420px;
+  }
+
+  .business-auth-logo {
+    font-size: 23px;
+  }
+
+  .business-auth-form {
+    padding: 24px 22px 0;
+  }
+
+  .business-auth-footer {
+    margin: 18px 22px 24px;
+  }
+}

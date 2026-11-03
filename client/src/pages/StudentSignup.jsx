@@ -27,6 +27,7 @@ const validators = {
   },
 };
 
+// Use a shared field order for validation and a fresh baseline for form resets.
 const FIELD_IDS = ["name", "email", "major", "year", "password"];
 const EMPTY_VALUES = { name: "", email: "", major: "", year: "", password: "" };
 
@@ -65,18 +66,21 @@ export default function StudentSignup({
     return Array.from({ length: 8 }, (_, i) => thisYear - 1 + i);
   }, []);
 
+  // Validate one field, store its message, and report whether it passed.
   const validateField = (id, value) => {
     const message = validators[id](value);
     setErrors((prev) => ({ ...prev, [id]: message }));
     return !message;
   };
 
+  // Keep the controlled values current and refresh errors as they are corrected.
   const handleChange = (id, value) => {
     setValues((prev) => ({ ...prev, [id]: value }));
     // Clear an existing error as soon as the person starts fixing it.
     if (errors[id]) validateField(id, value);
   };
 
+  // Validate before submission, focus the first invalid field, then handle the request.
   const handleSubmit = async (event) => {
     event.preventDefault();
     setStatus("idle");
@@ -124,6 +128,7 @@ export default function StudentSignup({
     },
   });
 
+  // Render an associated inline message only when validation found an error.
   const renderError = (id) =>
     errors[id] ? (
       <p id={`${id}-error`} className="su-error">
@@ -136,6 +141,7 @@ export default function StudentSignup({
   return (
     <>
       <div className="su-page">
+        {/* Introduce student signup and provide brand and help navigation. */}
         <section className="su-brand">
           <Link className="su-logo" to={homeHref}>
             Launch<span>Pad</span>
@@ -158,11 +164,13 @@ export default function StudentSignup({
           </div>
         </section>
 
+        {/* Present account creation, status feedback, and the signup form. */}
         <main className="su-panel">
           <div className="su-card">
             <h2>Create your account</h2>
             <p className="su-lead">It takes a few minutes.</p>
 
+            {/* Announce the outcome of the latest account creation attempt. */}
             {status === "success" && (
               <div className="su-banner su-success" role="status">
                 Account created! You can log in now.
@@ -175,6 +183,7 @@ export default function StudentSignup({
               </div>
             )}
 
+            {/* Collect student details and validate them before submission. */}
             <form onSubmit={handleSubmit} noValidate>
               <div className="su-field">
                 <label htmlFor="name">Full name</label>
@@ -224,6 +233,7 @@ export default function StudentSignup({
                 </div>
               </div>
 
+              {/* Allow password visibility while keeping the password hint available. */}
               <div className="su-field">
                 <label htmlFor="password">Password</label>
                 <div className="su-pw">
@@ -254,6 +264,7 @@ export default function StudentSignup({
               </button>
             </form>
 
+            {/* Offer a direct route to sign in for returning students. */}
             <p className="su-alt">
               Already have an account? <Link to="/login">Log in</Link>
             </p>
