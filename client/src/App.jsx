@@ -21,13 +21,12 @@ function App() {
 
         {/* Provide routes for student signup. */}
         <Route path="/signup" element={<StudentSignup />} />
-        
+
         {/* Show details for the work order identified in the URL. */}
         <Route path="/work-orders/:id" element={<WorkOrderDetails />} />
 
         {/* Provide the business work order posting page. */}
         <Route path="/businesses" element={<BusinessPage />} />
-        
       </Routes>
     </BrowserRouter>
   );

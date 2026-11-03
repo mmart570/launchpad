@@ -116,8 +116,9 @@ export default function StudentSignup({
     onBlur: () => validateField(id, values[id]),
     "aria-invalid": errors[id] ? "true" : "false",
     "aria-describedby":
-      [extraDescribedBy, errors[id] ? `${id}-error` : ""].filter(Boolean).join(" ") ||
-      undefined,
+      [extraDescribedBy, errors[id] ? `${id}-error` : ""]
+        .filter(Boolean)
+        .join(" ") || undefined,
     ref: (el) => {
       inputRefs.current[id] = el;
     },
@@ -135,23 +136,26 @@ export default function StudentSignup({
   return (
     <>
       <div className="su-page">
-      <section className="su-brand">
-            <Link className="su-logo" to={homeHref}>
-                Launch<span>Pad</span>
-            </Link>
+        <section className="su-brand">
+          <Link className="su-logo" to={homeHref}>
+            Launch<span>Pad</span>
+          </Link>
 
-            <div className="su-brand-content">
-                <h1>
-                Your first real
-                <br />
-                project is waiting.
-                </h1>
-                <p>Create a free student account to browse work orders from verified businesses.</p>
-            </div>
+          <div className="su-brand-content">
+            <h1>
+              Your first real
+              <br />
+              project is waiting.
+            </h1>
+            <p>
+              Create a free student account to browse work orders from verified
+              businesses.
+            </p>
+          </div>
 
-            <div className="su-brand-footer">
-                <Link to={helpHref}>Need help?</Link>
-            </div>
+          <div className="su-brand-footer">
+            <Link to={helpHref}>Need help?</Link>
+          </div>
         </section>
 
         <main className="su-panel">
@@ -166,14 +170,20 @@ export default function StudentSignup({
             )}
             {status === "failure" && (
               <div className="su-banner su-failure" role="status">
-                We could not create your account. Check your connection and try again.
+                We could not create your account. Check your connection and try
+                again.
               </div>
             )}
 
             <form onSubmit={handleSubmit} noValidate>
               <div className="su-field">
                 <label htmlFor="name">Full name</label>
-                <input className="su-input" type="text" autoComplete="name" {...fieldProps("name")} />
+                <input
+                  className="su-input"
+                  type="text"
+                  autoComplete="name"
+                  {...fieldProps("name")}
+                />
                 {renderError("name")}
               </div>
 
@@ -192,7 +202,12 @@ export default function StudentSignup({
               <div className="su-row">
                 <div className="su-field">
                   <label htmlFor="major">Major</label>
-                  <input className="su-input" type="text" autoComplete="off" {...fieldProps("major")} />
+                  <input
+                    className="su-input"
+                    type="text"
+                    autoComplete="off"
+                    {...fieldProps("major")}
+                  />
                   {renderError("major")}
                 </div>
                 <div className="su-field">
