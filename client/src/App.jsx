@@ -9,6 +9,8 @@ import StudentSignup from "./pages/StudentSignup";
 import BusinessAuth from "./pages/BusinessAuth";
 import MyApplications from "./pages/MyApplications";
 import StudentProfile from "./pages/StudentProfile";
+import ForgotPassword from './pages/ForgotPassword'
+
 
 // Configure client-side routes for student and business pages.
 function App() {
@@ -39,6 +41,9 @@ function App() {
 
         {/* Provide the student's profile page. */}
         <Route path="/profile" element={<StudentProfile />} />
+        
+        {/* Provide the forgot password page route. */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </BrowserRouter>
   );
