@@ -14,6 +14,7 @@ const student = {
   businessesWorkedWith: "[#]",
 };
 
+// Render completed work as portfolio cards linked to their work order details.
 const projects = [
   {
     id: 1,
@@ -47,6 +48,7 @@ const projects = [
 function StudentProfile() {
   return (
     <div className="student-profile-page">
+      {/* Provide student navigation and mark the active profile destination. */}
       <header className="student-profile-navbar">
         <Link to="/" className="student-profile-logo">
           Launch<span>Pad</span>
@@ -68,8 +70,10 @@ function StudentProfile() {
         </nav>
       </header>
 
+      {/* Show the student's identity, skills, activity, and completed projects. */}
       <main className="student-profile-main">
         <section className="student-profile-card">
+          {/* Combine identity details with the profile editing action. */}
           <div className="student-profile-top">
             <div className="student-profile-avatar" aria-hidden="true">
               {student.initials}
@@ -102,6 +106,7 @@ function StudentProfile() {
             </button>
           </div>
 
+          {/* Summarize the student's work history and reputation. */}
           <div className="student-profile-stats">
             <div className="student-profile-stat">
               <span>Completed work orders</span>
@@ -120,6 +125,7 @@ function StudentProfile() {
           </div>
         </section>
 
+        {/* Highlight completed work in a browsable project grid. */}
         <section className="student-portfolio">
           <h2>Portfolio</h2>
 
