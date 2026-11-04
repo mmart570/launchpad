@@ -8,6 +8,7 @@ import BusinessPage from "./pages/BusinessPage";
 import StudentSignup from "./pages/StudentSignup";
 import BusinessAuth from "./pages/BusinessAuth";
 import MyApplications from "./pages/MyApplications";
+import StudentProfile from "./pages/StudentProfile";
 
 // Configure client-side routes for student and business pages.
 function App() {
@@ -35,6 +36,9 @@ function App() {
 
         {/* Provide the student's applications page. */}
         <Route path="/my-applications" element={<MyApplications />} />
+
+        {/* Provide the student's profile page. */}
+        <Route path="/profile" element={<StudentProfile />} />
       </Routes>
     </BrowserRouter>
   );
