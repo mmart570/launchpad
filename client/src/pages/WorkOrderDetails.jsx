@@ -68,13 +68,9 @@ function WorkOrderDetails() {
       {/* Present work order actions and the selected information tab. */}
       <main className="work-details-main">
         <div className="work-details-actions">
-          <button
-            type="button"
-            className="work-action-apply"
-            onClick={handleApply}
-          >
+          <Link to={`/work-orders/${id}/apply`} className="work-apply-button">
             Apply for this work order
-          </button>
+          </Link>
 
           <button
             type="button"

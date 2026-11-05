@@ -1,43 +1,41 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import '../styles/ForgotPassword.css'
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import "../styles/ForgotPassword.css";
 
 function ForgotPassword() {
   // Keep the email request and password update forms independent.
-  const [email, setEmail] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [forgotNotice, setForgotNotice] = useState('')
-  const [resetNotice, setResetNotice] = useState('')
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [forgotNotice, setForgotNotice] = useState("");
+  const [resetNotice, setResetNotice] = useState("");
 
   // Show backend connection status after requesting a recovery email.
   function handleForgotSubmit(event) {
-    event.preventDefault()
+    event.preventDefault();
 
     // Connect this to your backend's password-reset email endpoint later.
     setForgotNotice(
-      'Password reset emails are not connected to the backend yet.',
-    )
+      "Password reset emails are not connected to the backend yet.",
+    );
   }
 
   // Check password requirements before reporting the pending backend integration.
   function handleResetSubmit(event) {
-    event.preventDefault()
+    event.preventDefault();
 
     if (newPassword.length < 8) {
-      setResetNotice('Password must be at least 8 characters.')
-      return
+      setResetNotice("Password must be at least 8 characters.");
+      return;
     }
 
     if (newPassword !== confirmPassword) {
-      setResetNotice('Passwords do not match.')
-      return
+      setResetNotice("Passwords do not match.");
+      return;
     }
 
     // A real reset must also verify a secure, unexpired reset token.
-    setResetNotice(
-      'Password resetting is not connected to the backend yet.',
-    )
+    setResetNotice("Password resetting is not connected to the backend yet.");
   }
 
   return (
@@ -138,7 +136,7 @@ function ForgotPassword() {
         </section>
       </div>
     </main>
-  )
+  );
 }
 
-export default ForgotPassword
+export default ForgotPassword;

@@ -477,3 +477,26 @@
 .work-business-link:hover {
   text-decoration: underline;
 }
+
+/* Style the primary application link as a prominent action button. */
+.work-apply-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 9px;
+  background-color: #19c45b;
+  color: #0d203b;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.work-apply-button:hover {
+  background-color: #15b452;
+  color: #0d203b;
+  text-decoration: none;
+}
