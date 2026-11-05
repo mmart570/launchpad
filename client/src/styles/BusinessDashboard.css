@@ -1,0 +1,367 @@
+
+.business-dashboard-page {
+  min-height: 100vh;
+  background: #f3f6fa;
+  color: #0d203b;
+  font-family: Inter, system-ui, Arial, sans-serif;
+}
+
+/* Align the business wordmark with the dashboard and posting navigation. */
+.business-dashboard-navbar {
+  min-height: 64px;
+  padding: 0 44px;
+  background: #0d203b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.business-dashboard-logo {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.business-dashboard-logo span {
+  color: #19c45b;
+}
+
+.business-dashboard-logo small {
+  margin-left: 5px;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.business-dashboard-nav {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.business-dashboard-nav > a {
+  color: #c5d0de;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.business-dashboard-nav > a.active {
+  color: #fff;
+  font-weight: 700;
+}
+
+.business-dashboard-nav .business-dashboard-nav-avatar {
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  background: #2161ff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Constrain the dashboard and establish spacing below the site header. */
+.business-dashboard-main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 44px 80px;
+}
+
+.business-dashboard-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.business-dashboard-heading h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.business-dashboard-heading p {
+  margin: 0;
+  color: #42536b;
+  font-size: 15px;
+}
+
+/* Keep the primary work-order action prominent beside the page heading. */
+.business-dashboard-post {
+  min-height: 45px;
+  padding: 0 23px;
+  background: #2161ff;
+  color: #fff;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.business-dashboard-post:hover,
+.business-dashboard-accept:hover {
+  background: #1550e5;
+}
+
+/* Arrange the key business activity metrics in an even row of cards. */
+.business-dashboard-statistics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.business-dashboard-stat-card {
+  min-height: 94px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 22px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 16px rgba(13, 32, 59, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.business-dashboard-stat-card span {
+  color: #42536b;
+  font-size: 14px;
+}
+
+.business-dashboard-stat-card strong {
+  color: #0d203b;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+/* Present work orders and applicants in parallel management panels. */
+.business-dashboard-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.business-dashboard-panel {
+  min-width: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(13, 32, 59, 0.06);
+  overflow: hidden;
+}
+
+.business-dashboard-panel > h2 {
+  margin: 0;
+  padding: 20px 22px;
+  font-size: 18px;
+  font-weight: 800;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.business-dashboard-order,
+.business-dashboard-applicant {
+  min-height: 69px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 22px;
+  border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+/* Remove the divider after the final row in either management panel. */
+.business-dashboard-order:last-child,
+.business-dashboard-applicant:last-child {
+  border-bottom: none;
+}
+
+.business-dashboard-order-info,
+.business-dashboard-applicant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.business-dashboard-order-info h3,
+.business-dashboard-applicant-info h3 {
+  margin: 0 0 3px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.business-dashboard-order-info p,
+.business-dashboard-applicant-info p {
+  margin: 0;
+  color: #42536b;
+  font-size: 13px;
+}
+
+.business-dashboard-status {
+  border-radius: 20px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.business-dashboard-status.status-open {
+  background: #d8f9e5;
+  color: #178747;
+}
+
+.business-dashboard-status.status-progress {
+  background: #e2e9ff;
+  color: #3a56a4;
+}
+
+.business-dashboard-status.status-completed {
+  background: #e2e8f0;
+  color: #42536b;
+}
+
+/* Keep applicant review links visually secondary to the accept action. */
+.business-dashboard-outline {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid #2161ff;
+  border-radius: 9px;
+  background: #fff;
+  color: #2161ff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.business-dashboard-outline:hover {
+  background: #eef3ff;
+}
+
+.business-dashboard-student-avatar {
+  width: 37px;
+  height: 37px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #2161ff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.business-dashboard-accept {
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 9px;
+  background: #2161ff;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.business-dashboard-empty {
+  margin: 0;
+  padding: 28px 22px;
+  color: #42536b;
+  font-size: 14px;
+}
+
+.business-dashboard-notice {
+  margin: 12px 22px 20px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff3c4;
+  color: #825000;
+  font-size: 13px;
+}
+
+/* Stack the work order and applicant panels on narrower screens. */
+
+@media (max-width: 1050px) {
+  .business-dashboard-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Wrap navigation and reduce the metric grid to two columns on tablets. */
+@media (max-width: 750px) {
+  .business-dashboard-navbar {
+    padding: 15px 20px;
+    flex-wrap: wrap;
+  }
+
+  .business-dashboard-nav {
+    gap: 15px;
+  }
+
+  .business-dashboard-main {
+    padding: 28px 20px 60px;
+  }
+
+  .business-dashboard-statistics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .business-dashboard-heading h1 {
+    font-size: 26px;
+  }
+}
+
+/* Stack row controls and tighten card spacing on compact phones. */
+@media (max-width: 480px) {
+  .business-dashboard-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .business-dashboard-statistics {
+    gap: 12px;
+  }
+
+  .business-dashboard-stat-card {
+    padding: 15px;
+  }
+
+  .business-dashboard-order,
+  .business-dashboard-applicant {
+    flex-wrap: wrap;
+    padding: 15px;
+  }
+
+  .business-dashboard-order-info,
+  .business-dashboard-applicant-info {
+    flex-basis: calc(100% - 55px);
+  }
+
+  .business-dashboard-order .business-dashboard-outline {
+    margin-left: auto;
+  }
+
+  .business-dashboard-panel > h2 {
+    padding: 18px 15px;
+  }
+}

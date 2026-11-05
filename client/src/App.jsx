@@ -11,6 +11,7 @@ import MyApplications from "./pages/MyApplications";
 import StudentProfile from "./pages/StudentProfile";
 import ForgotPassword from "./pages/ForgotPassword";
 import ApplicationSubmission from "./pages/ApplicationSubmission";
+import BusinessDashboard from './pages/BusinessDashboard';
 
 // Configure client-side routes for student and business pages.
 function App() {
@@ -46,10 +47,10 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Provide the application submission page route. */}
-        <Route
-          path="/work-orders/:id/apply"
-          element={<ApplicationSubmission />}
-        />
+        <Route path="/work-orders/:id/apply" element={<ApplicationSubmission />} />
+
+        {/* Provide the business dashboard page route. */}
+        <Route path="/business-dashboard" element={<BusinessDashboard />} />
       </Routes>
     </BrowserRouter>
   );
