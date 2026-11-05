@@ -1,9 +1,13 @@
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/BusinessAuth.css";
 
+const API_URL = "http://localhost:3000";
+
 function BusinessAuth() {
-  // Keep the selected account mode and field values in sync with the form.
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState("signup");
   const [form, setForm] = useState({
     businessName: "",
@@ -11,9 +15,11 @@ function BusinessAuth() {
     email: "",
     password: "",
   });
-  const [notice, setNotice] = useState("");
 
-  // Update only the edited field and clear stale submission feedback.
+  const [notice, setNotice] = useState("");
+  const [noticeType, setNoticeType] = useState("");
+  const [loading, setLoading] = useState(false);
+
   function handleChange(event) {
     const { name, value } = event.target;
 
@@ -21,37 +27,135 @@ function BusinessAuth() {
       ...previous,
       [name]: value,
     }));
+
     setNotice("");
   }
 
-  // Switch account modes without carrying over an old status message.
   function switchTab(tab) {
+    if (loading) return;
+
     setActiveTab(tab);
     setNotice("");
+    setNoticeType("");
+    setForm((previous) => ({
+      ...previous,
+      password: "",
+    }));
   }
 
-  // Prevent a page reload and explain that authentication is not wired up yet.
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setNotice("");
+    setNoticeType("");
+    setLoading(true);
 
-    if (activeTab === "signup") {
-      setNotice("Business registration is not connected to the backend yet.");
-    } else {
-      setNotice("Business login is not connected to the backend yet.");
+    try {
+      const isSignup = activeTab === "signup";
+
+      const endpoint = isSignup
+        ? `${API_URL}/api/auth/register`
+        : `${API_URL}/api/auth/login`;
+
+      let payload;
+
+      if (isSignup) {
+        payload = {
+          email: form.email.trim(),
+          password: form.password,
+          role: "business",
+          businessProfile: {
+            companyName: form.businessName.trim(),
+            contactName: form.contactName.trim(),
+          },
+        };
+      } else {
+        payload = {
+          email: form.email.trim(),
+          password: form.password,
+        };
+      }
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            (isSignup
+              ? "Unable to create your business account."
+              : "Unable to log in."),
+        );
+      }
+
+      if (!result.userId || !result.token) {
+        throw new Error(
+          "The server did not return valid account credentials.",
+        );
+      }
+
+      if (result.role !== "business") {
+        throw new Error(
+          "This is not a business account. Please use student login.",
+        );
+      }
+
+      if (isSignup) {
+        // Keep registration and login as separate steps.
+        setNotice("Business account created! You can log in now.");
+        setNoticeType("success");
+        setActiveTab("login");
+        setForm((previous) => ({
+          ...previous,
+          password: "",
+        }));
+        return;
+      }
+
+      // Clear any previous student or business session.
+      localStorage.removeItem("launchpad_token");
+      localStorage.removeItem("launchpad_user");
+      sessionStorage.removeItem("launchpad_token");
+      sessionStorage.removeItem("launchpad_user");
+
+      // Store the business session for the prototype.
+      sessionStorage.setItem("launchpad_token", result.token);
+      sessionStorage.setItem(
+        "launchpad_user",
+        JSON.stringify({
+          userId: result.userId,
+          role: result.role,
+          email: form.email.trim(),
+        }),
+      );
+
+      navigate("/business-dashboard", { replace: true });
+    } catch (error) {
+      console.error("Business authentication failed:", error);
+      setNotice(
+        error.message ||
+          "Something went wrong. Please check your connection.",
+      );
+      setNoticeType("error");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    // Center the branded account card within the page.
     <main className="business-auth-page">
       <div className="business-auth-container">
-        {/* Return to the landing page through the LaunchPad wordmark. */}
         <Link to="/" className="business-auth-logo">
           Launch<span>Pad</span>
           <small> for Business</small>
         </Link>
 
-        {/* Let businesses switch between registration and login forms. */}
         <section className="business-auth-card">
           <div
             className="business-auth-tabs"
@@ -80,7 +184,6 @@ function BusinessAuth() {
           </div>
 
           <form className="business-auth-form" onSubmit={handleSubmit}>
-            {/* Request organization and contact details only during signup. */}
             {activeTab === "signup" && (
               <>
                 <div className="business-auth-field">
@@ -89,7 +192,7 @@ function BusinessAuth() {
                     id="business-name"
                     name="businessName"
                     type="text"
-                    placeholder="[Business name]"
+                    placeholder="Business name"
                     value={form.businessName}
                     onChange={handleChange}
                     autoComplete="organization"
@@ -103,7 +206,7 @@ function BusinessAuth() {
                     id="contact-name"
                     name="contactName"
                     type="text"
-                    placeholder="[Contact name]"
+                    placeholder="Contact name"
                     value={form.contactName}
                     onChange={handleChange}
                     autoComplete="name"
@@ -113,14 +216,13 @@ function BusinessAuth() {
               </>
             )}
 
-            {/* Collect credentials in both account modes. */}
             <div className="business-auth-field">
               <label htmlFor="business-email">Work email</label>
               <input
                 id="business-email"
                 name="email"
                 type="email"
-                placeholder="[you@company.com]"
+                placeholder="you@company.com"
                 value={form.email}
                 onChange={handleChange}
                 autoComplete="email"
@@ -128,38 +230,47 @@ function BusinessAuth() {
               />
             </div>
 
-            {/* Use mode-specific password guidance and submit labels. */}
             <div className="business-auth-field">
               <label htmlFor="business-password">Password</label>
               <input
                 id="business-password"
                 name="password"
                 type="password"
-                placeholder="[Password]"
+                placeholder="Password"
                 value={form.password}
                 onChange={handleChange}
                 autoComplete={
-                  activeTab === "signup" ? "new-password" : "current-password"
+                  activeTab === "signup"
+                    ? "new-password"
+                    : "current-password"
                 }
                 minLength={activeTab === "signup" ? 8 : undefined}
                 required
               />
             </div>
 
-            {/* Submit the selected account action and show status feedback. */}
-            <button type="submit" className="business-auth-submit">
-              {activeTab === "signup" ? "Create business account" : "Log in"}
+            <button
+              type="submit"
+              className="business-auth-submit"
+              disabled={loading}
+            >
+              {loading
+                ? "Please wait..."
+                : activeTab === "signup"
+                  ? "Create business account"
+                  : "Log in"}
             </button>
 
-            {/* Announce submission status accessibly when feedback is available. */}
             {notice && (
-              <p className="business-auth-notice" role="status">
+              <p
+                className="business-auth-notice"
+                role={noticeType === "error" ? "alert" : "status"}
+              >
                 {notice}
               </p>
             )}
           </form>
 
-          {/* Explain the review process only to prospective new accounts. */}
           {activeTab === "signup" && (
             <p className="business-auth-footer">
               We review each business before work orders go live.

@@ -2,6 +2,8 @@ import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/StudentSignup.css";
 
+const API_URL = "http://localhost:3000";
+
 // Each validator returns an error message, or "" when the value is fine.
 const validators = {
   name: (v) => (v.trim() ? "" : "Enter your full name."),
@@ -36,15 +38,46 @@ const EMPTY_VALUES = { name: "", email: "", major: "", year: "", password: "" };
 // Replace the body of this function with your real sign-up request,
 // or pass your own function to the component through the onSignUp prop.
 async function defaultCreateAccount(data) {
-  // const res = await fetch("/api/students/signup", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(data),
-  // });
-  // if (!res.ok) throw new Error("Sign-up failed");
-  // return res.json();
-  return new Promise((resolve) => setTimeout(resolve, 600));
+  const nameParts = data.name.trim().split(/\s+/);
+  const firstName = nameParts[0];
+  const lastName = nameParts.slice(1).join(" ");
+
+  const response = await fetch(`${API_URL}/api/auth/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: data.email.trim(),
+      password: data.password,
+      role: "student",
+      studentProfile: {
+        firstName,
+        lastName,
+        major: data.major.trim(),
+      },
+    }),
+  });
+
+  let result;
+
+  try {
+    result = await response.json();
+  } catch {
+    throw new Error("The server returned an invalid response.");
+  }
+
+  if (!response.ok) {
+    throw new Error(result.error || "Account creation failed.");
+  }
+
+  if (!result.userId || !result.token) {
+    throw new Error("The server did not return account credentials.");
+  }
+
+  return result;
 }
+
 
 /* ---------- Component ---------- */
 
@@ -58,6 +91,7 @@ export default function StudentSignup({
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | submitting | success | failure
+  const [serverError, setServerError] = useState("");
   const inputRefs = useRef({});
 
   // Graduation years: last year through six years out.
@@ -84,6 +118,8 @@ export default function StudentSignup({
   const handleSubmit = async (event) => {
     event.preventDefault();
     setStatus("idle");
+    setServerError("");
+    
 
     let firstInvalid = null;
     FIELD_IDS.forEach((id) => {
@@ -95,6 +131,7 @@ export default function StudentSignup({
     }
 
     setStatus("submitting");
+
     try {
       await onSignUp({
         name: values.name.trim(),
@@ -103,10 +140,15 @@ export default function StudentSignup({
         graduationYear: values.year,
         password: values.password,
       });
+
       setValues(EMPTY_VALUES);
       setErrors({});
       setStatus("success");
-    } catch {
+    } catch (error) {
+      console.error("Registration failed:", error);
+      setServerError(
+        error.message || "Unable to create your account. Please try again.",
+      );
       setStatus("failure");
     }
   };
@@ -177,9 +219,8 @@ export default function StudentSignup({
               </div>
             )}
             {status === "failure" && (
-              <div className="su-banner su-failure" role="status">
-                We could not create your account. Check your connection and try
-                again.
+              <div className="su-banner su-failure" role="alert">
+                {serverError}
               </div>
             )}
 

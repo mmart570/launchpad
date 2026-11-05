@@ -1,39 +1,115 @@
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import "../styles/WorkOrderDetails.css";
 import BusinessInformation from "../components/BusinessInformation";
 
+const API_URL = "http://localhost:3000";
+
+function formatMoney(value) {
+  const amount = Number(value);
+  return value !== null && value !== undefined && Number.isFinite(amount)
+    ? `$${amount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`
+    : "Not specified";
+}
+
+function formatDate(value) {
+  if (!value) return "Not specified";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not specified";
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 function WorkOrderDetails() {
-  // Read the work order identifier from the current route.
   const { id } = useParams();
 
-  // Track the selected content tab and provide action feedback.
+  const [workOrder, setWorkOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [activeTab, setActiveTab] = useState("details");
   const [notice, setNotice] = useState("");
-
-  // Control whether the business profile dialog is visible.
   const [showBusinessInfo, setShowBusinessInfo] = useState(false);
 
-  // Display a placeholder until application submission is connected.
-  function handleApply() {
-    setNotice("Applications are not connected to the backend yet.");
-  }
+  useEffect(() => {
+    const controller = new AbortController();
 
-  // Open the messages tab and clear any previous notice.
+    async function loadWorkOrder() {
+      try {
+        setLoading(true);
+        setError("");
+        setWorkOrder(null);
+
+        const response = await fetch(
+          `${API_URL}/api/work-orders/${encodeURIComponent(id)}`,
+          { signal: controller.signal },
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            response.status === 404
+              ? "This work order could not be found."
+              : "Unable to load work order details.",
+          );
+        }
+
+        const data = await response.json();
+
+        if (!data || Array.isArray(data) || !data._id) {
+          throw new Error("Unexpected response from the backend.");
+        }
+
+        if (!controller.signal.aborted) {
+          setWorkOrder(data);
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          console.error("Work order request failed:", err);
+          setError(err.message || "Unable to load work order details.");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadWorkOrder();
+
+    return () => controller.abort();
+  }, [id]);
+
   function handleMessage() {
     setActiveTab("messages");
     setNotice("");
   }
 
-  // Display a placeholder until problem reporting is available.
   function handleReport() {
-    setNotice("Problem reporting is not connected to the backend yet.");
+    setNotice("Problem reporting is not available yet.");
   }
 
+  const businessName =
+    workOrder?.businessId?.businessProfile?.companyName ||
+    "Business name unavailable";
+
+  const budget = formatMoney(workOrder?.budget);
+  const deadline = formatDate(workOrder?.deadline);
+  const category = workOrder?.category || "Not specified";
+  const description =
+    workOrder?.description || "No description provided.";
+
   return (
-    // Group navigation, work order information, and related actions.
     <div className="work-details-page">
-      {/* Provide brand navigation and a return link to the dashboard. */}
       <header className="work-details-navbar">
         <Link to="/" className="work-details-logo">
           Launch<span>Pad</span>
@@ -44,295 +120,343 @@ function WorkOrderDetails() {
         </Link>
       </header>
 
-      {/* Summarize payment, estimated duration, and business contact. */}
-      <section className="work-details-summary">
-        <div className="work-summary-item">
-          <strong>Pay: Fixed</strong>
-          <span className="work-summary-pay">$[Amount]</span>
-        </div>
+      {loading && (
+        <main className="work-details-main">
+          <p role="status">Loading work order details...</p>
+        </main>
+      )}
 
-        <div className="work-summary-item">
-          <strong>Estimated time</strong>
-          <span className="work-summary-time">[2] hours</span>
-        </div>
+      {!loading && error && (
+        <main className="work-details-main">
+          <h1>Unable to display work order</h1>
+          <p role="alert">{error}</p>
+          <Link to="/dashboard">Return to dashboard</Link>
+        </main>
+      )}
 
-        <div className="work-summary-contact">
-          <span className="work-contact-avatar">[JD]</span>
-          <div>
-            <strong>Business contact</strong>
-            <span>[Contact name]</span>
-          </div>
-        </div>
-      </section>
+      {!loading && !error && workOrder && (
+        <>
+          <section className="work-details-summary">
+            <div className="work-summary-item">
+              <strong>Pay: Fixed</strong>
+              <span className="work-summary-pay">{budget}</span>
+            </div>
 
-      {/* Present work order actions and the selected information tab. */}
-      <main className="work-details-main">
-        <div className="work-details-actions">
-          <Link to={`/work-orders/${id}/apply`} className="work-apply-button">
-            Apply for this work order
-          </Link>
+            <div className="work-summary-item">
+              <strong>Estimated time</strong>
+              <span className="work-summary-time">
+                Not specified
+              </span>
+            </div>
 
-          <button
-            type="button"
-            className="work-action-outline"
-            onClick={handleMessage}
-          >
-            Message business
-          </button>
+            <div className="work-summary-contact">
+              <span className="work-contact-avatar">B</span>
+              <div>
+                <strong>Business</strong>
+                <span>{businessName}</span>
+              </div>
+            </div>
+          </section>
 
-          <button
-            type="button"
-            className="work-action-outline"
-            onClick={handleReport}
-          >
-            Report problem
-          </button>
-        </div>
+          <main className="work-details-main">
+            <div className="work-details-actions">
+              <Link
+                to={`/work-orders/${id}/apply`}
+                className="work-apply-button"
+              >
+                Apply for this work order
+              </Link>
 
-        {/* Announce action feedback to users and assistive technology. */}
-        {notice && (
-          <p className="work-details-notice" role="status">
-            {notice}
-          </p>
-        )}
+              <button
+                type="button"
+                className="work-action-outline"
+                onClick={handleMessage}
+              >
+                Message business
+              </button>
 
-        {/* Let users switch between work order details and messages. */}
-        <div className="work-details-tabs">
-          <button
-            type="button"
-            className={activeTab === "details" ? "active" : ""}
-            onClick={() => setActiveTab("details")}
-          >
-            Details
-          </button>
+              <button
+                type="button"
+                className="work-action-outline"
+                onClick={handleReport}
+              >
+                Report problem
+              </button>
+            </div>
 
-          <button
-            type="button"
-            className={activeTab === "messages" ? "active" : ""}
-            onClick={() => setActiveTab("messages")}
-          >
-            Messages <span className="work-message-count">1</span>
-          </button>
-        </div>
+            {notice && (
+              <p className="work-details-notice" role="status">
+                {notice}
+              </p>
+            )}
 
-        {/* Render the active tab's content. */}
-        {activeTab === "details" ? (
-          <div className="work-details-grid">
-            {/* Show project overview, qualifications, and scope of work. */}
-            <div className="work-details-left">
-              <section className="work-info-card">
-                <h2>Overview</h2>
+            <div className="work-details-tabs">
+              <button
+                type="button"
+                className={activeTab === "details" ? "active" : ""}
+                onClick={() => setActiveTab("details")}
+              >
+                Details
+              </button>
 
-                <div className="work-overview-grid">
-                  <div>
-                    <p>
-                      <strong>Business:</strong>{" "}
+              <button
+                type="button"
+                className={activeTab === "messages" ? "active" : ""}
+                onClick={() => setActiveTab("messages")}
+              >
+                Messages
+              </button>
+            </div>
+
+            {activeTab === "details" ? (
+              <div className="work-details-grid">
+                <div className="work-details-left">
+                  <section className="work-info-card">
+                    <h2>Overview</h2>
+
+                    <div className="work-overview-grid">
+                      <div>
+                        <p>
+                          <strong>Business:</strong>{" "}
+                          <button
+                            type="button"
+                            className="work-business-link"
+                            onClick={() => setShowBusinessInfo(true)}
+                          >
+                            {businessName}
+                          </button>
+                        </p>
+
+                        <p>
+                          <strong>Business address:</strong>{" "}
+                          Not specified
+                        </p>
+
+                        <p>
+                          <strong>Overall rating:</strong>{" "}
+                          Not available
+                        </p>
+
+                        <p>
+                          <strong>Project ID:</strong> {workOrder._id}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p>
+                          <strong>Title:</strong> {workOrder.title}
+                        </p>
+
+                        <p>
+                          <strong>Client:</strong> Not specified
+                        </p>
+
+                        <p>
+                          <strong>Project:</strong> Not specified
+                        </p>
+
+                        <p>
+                          <strong>Talent type:</strong> CS student
+                        </p>
+
+                        <p>
+                          <strong>Status:</strong>{" "}
+                          {workOrder.status || "Not specified"}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="work-info-card">
+                    <h2>Work Experience</h2>
+
+                    <div className="work-info-body">
+                      <p>
+                        <strong>Type of work:</strong>{" "}
+                        <span className="work-tag">
+                          {category}
+                        </span>
+                      </p>
+
+                      <p>
+                        <strong>Additional types of work:</strong>{" "}
+                        Not specified
+                      </p>
+
+                      <p>
+                        <strong>Service type:</strong>{" "}
+                        Not specified
+                      </p>
+                    </div>
+                  </section>
+
+                  <section className="work-info-card">
+                    <h2>Work Order Qualifications</h2>
+
+                    <div className="work-info-body">
+                      <p>
+                        Requirements have not been specified.
+                      </p>
+                    </div>
+                  </section>
+
+                  <section className="work-info-card">
+                    <h2>Service Description</h2>
+
+                    <div className="work-info-body work-service-description">
+                      <p>
+                        <em>
+                          <u>
+                            Please read the ENTIRE scope of work
+                            before applying!
+                          </u>
+                        </em>
+                      </p>
+
+                      <div>
+                        <strong>SCOPE OF WORK:</strong>
+                        <p>{description}</p>
+                      </div>
+
+                      <div>
+                        <strong>Deliverables:</strong>
+                        <p>Not specified</p>
+                      </div>
+
+                      <div>
+                        <strong>Tools and requirements:</strong>
+                        <p>Not specified</p>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <aside className="work-details-right">
+                  <section className="work-info-card work-payment-card">
+                    <div className="work-payment-heading">
+                      <h2>Pay</h2>
+                      <span>Fixed</span>
+                    </div>
+
+                    <div className="work-payment-terms">
+                      <h3>Payment Terms</h3>
+
+                      <p>
+                        Payment terms have not been specified.
+                      </p>
+
+                      <p>
+                        <strong>
+                          Estimated time to approval:
+                        </strong>{" "}
+                        Not specified
+                      </p>
+
                       <button
                         type="button"
                         className="work-business-link"
-                        onClick={() => setShowBusinessInfo(true)}
+                        onClick={() =>
+                          setNotice(
+                            "Additional payment information is not available yet.",
+                          )
+                        }
                       >
-                        [Business name]
+                        Learn more
                       </button>
-                      <span className="work-verified"> ✓</span>
-                    </p>
-                    <p>[Business address]</p>
-                    <p className="work-muted">
-                      [This is not the work order address.]
-                    </p>
-                    <p>Overall rating: [Rating]</p>
-                    <p>Project ID: {id || "[no ID specified]"}</p>
-                  </div>
+                    </div>
 
-                  <div>
-                    <p>
-                      <strong>Title:</strong> [Work order title]
-                    </p>
-                    <p>
-                      <strong>Client:</strong> [Client or none]
-                    </p>
-                    <p>
-                      <strong>Project:</strong> [Project or none]
-                    </p>
-                    <p>
-                      <strong>Talent type:</strong> CS student
-                    </p>
-                  </div>
-                </div>
-              </section>
+                    <div className="work-payment-section">
+                      <div className="work-payment-title">
+                        <h3>Labor</h3>
+                        <strong>{budget}</strong>
+                      </div>
 
-              <section className="work-info-card">
-                <h2>Work Experience</h2>
+                      <div className="work-payment-row">
+                        <span>Pay Amount</span>
+                        <span>{budget}</span>
+                      </div>
 
-                <div className="work-info-body">
-                  <p>
-                    <strong>Type of work:</strong>{" "}
-                    <span className="work-tag">[Web development]</span>
-                  </p>
-                  <p>
-                    <strong>Additional types of work:</strong>{" "}
-                    <span className="work-tag">[Database]</span>
-                  </p>
-                  <p>
-                    <strong>Service type:</strong>{" "}
-                    <span className="work-tag">[New build]</span>
-                  </p>
-                </div>
-              </section>
+                      <div className="work-payment-row">
+                        <span>Approximate Hours to Complete</span>
+                        <span>Not specified</span>
+                      </div>
+                    </div>
 
-              <section className="work-info-card">
-                <h2>Work Order Qualifications</h2>
-                <div className="work-info-body">
-                  <p>
-                    [There are no requirements for requesting this work order.]
-                  </p>
-                </div>
-              </section>
+                    <div className="work-payment-line">
+                      <strong>Additional Charges ⓘ</strong>
+                      <span>Not specified</span>
+                    </div>
 
-              <section className="work-info-card">
-                <h2>Service Description</h2>
+                    <div className="work-payment-line">
+                      <strong>Service Charges ⓘ</strong>
+                      <span>Not specified</span>
+                    </div>
 
-                <div className="work-info-body work-service-description">
-                  <p>
-                    <em>
-                      <u>
-                        Please read the ENTIRE scope of work before applying!
-                      </u>
-                    </em>
-                  </p>
+                    <div className="work-payment-line">
+                      <strong>Taxes ⓘ</strong>
+                      <span>Not specified</span>
+                    </div>
+                  </section>
 
-                  <div>
-                    <strong>SCOPE OF WORK:</strong>
-                    <p>[Describe what the business needs built or fixed.]</p>
-                  </div>
+                  <section className="work-info-card work-total-card">
+                    <h2>Sum</h2>
 
-                  <div>
-                    <strong>Deliverables:</strong>
-                    <p>[List what the student should hand over.]</p>
-                  </div>
+                    <div className="work-info-body">
+                      <div className="work-payment-row">
+                        <span>Work Order Budget</span>
+                        <span>{budget}</span>
+                      </div>
 
-                  <div>
-                    <strong>Tools and requirements:</strong>
-                    <p>[List languages, tools, or access needed.]</p>
-                  </div>
-                </div>
-              </section>
-            </div>
+                      <div className="work-payment-row">
+                        <span>Total Service Charges</span>
+                        <span>Not specified</span>
+                      </div>
+                    </div>
 
-            {/* Summarize payment terms, costs, and project schedule. */}
-            <aside className="work-details-right">
-              <section className="work-info-card work-payment-card">
-                <div className="work-payment-heading">
-                  <h2>Pay</h2>
-                  <span>Fixed</span>
-                </div>
+                    <div className="work-total-row">
+                      <h3>Total</h3>
+                      <strong>Not calculated</strong>
+                    </div>
+                  </section>
 
-                <div className="work-payment-terms">
-                  <h3>Payment Terms</h3>
-                  <p>
-                    <strong>[14]-day terms</strong> ([how payment is processed])
-                  </p>
-                  <p>
-                    <strong>Estimated time to approval:</strong> [7] days
-                  </p>
-                  <a
-                    href="#payment-details"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setNotice(
-                        "Additional payment information is not available yet.",
-                      );
-                    }}
-                  >
-                    Learn more
-                  </a>
-                </div>
+                  <section className="work-info-card">
+                    <h2>Schedule</h2>
 
-                <div className="work-payment-section">
-                  <div className="work-payment-title">
-                    <h3>Labor</h3>
-                    <strong>$[Amount]</strong>
-                  </div>
-
-                  <div className="work-payment-row">
-                    <span>Pay Amount</span>
-                    <span>$[Amount]</span>
-                  </div>
-
-                  <div className="work-payment-row">
-                    <span>Approximate Hours to Complete</span>
-                    <span>[2]</span>
-                  </div>
-                </div>
-
-                <div className="work-payment-line">
-                  <strong>Additional Charges ⓘ</strong>
-                  <strong className="work-money-green">$[Amount]</strong>
-                </div>
-
-                <div className="work-payment-line">
-                  <strong>Service Charges ⓘ</strong>
-                  <strong className="work-money-red">$[Amount]</strong>
-                </div>
-
-                <div className="work-payment-line">
-                  <strong>Taxes ⓘ</strong>
-                  <strong className="work-money-red">$[Amount]</strong>
-                </div>
-              </section>
-
-              <section className="work-info-card work-total-card">
-                <h2>Sum</h2>
+                    <div className="work-info-body work-schedule">
+                      <strong>Deadline: {deadline}</strong>
+                      <p>
+                        Start time: Not specified
+                      </p>
+                      <p>
+                        End time: Not specified
+                      </p>
+                    </div>
+                  </section>
+                </aside>
+              </div>
+            ) : (
+              <section className="work-info-card work-messages-panel">
+                <h2>Messages</h2>
 
                 <div className="work-info-body">
-                  <div className="work-payment-row">
-                    <span>Work Order Cost</span>
-                    <span>$[Amount]</span>
-                  </div>
-
-                  <div className="work-payment-row">
-                    <span>Total Service Charges</span>
-                    <span>$[Amount]</span>
-                  </div>
-                </div>
-
-                <div className="work-total-row">
-                  <h3>Total</h3>
-                  <strong>$[Amount]</strong>
+                  <p>
+                    Messaging is not connected to the backend yet.
+                  </p>
                 </div>
               </section>
+            )}
+          </main>
 
-              <section className="work-info-card">
-                <h2>Schedule</h2>
-
-                <div className="work-info-body work-schedule">
-                  <strong>[Day, Date]</strong>
-                  <p>[Start time] to [End time]</p>
-                  <p>Deadline: [Date]</p>
-                </div>
-              </section>
-            </aside>
-          </div>
-        ) : (
-          // Explain that messaging will be available after backend integration.
-          <section className="work-info-card work-messages-panel">
-            <h2>Messages</h2>
-            <div className="work-info-body">
-              <p>Messaging will be available once the backend is connected.</p>
-            </div>
-          </section>
-        )}
-      </main>
-
-      {/* Show the business profile dialog when requested. */}
-      {showBusinessInfo && (
-        <BusinessInformation
-          onClose={() => setShowBusinessInfo(false)}
-          onMessage={() => {
-            setShowBusinessInfo(false);
-            handleMessage();
-          }}
-        />
+          {showBusinessInfo && (
+            <BusinessInformation
+              onClose={() => setShowBusinessInfo(false)}
+              onMessage={() => {
+                setShowBusinessInfo(false);
+                handleMessage();
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

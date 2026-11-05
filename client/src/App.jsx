@@ -8,10 +8,12 @@ import BusinessPage from "./pages/BusinessPage";
 import StudentSignup from "./pages/StudentSignup";
 import BusinessAuth from "./pages/BusinessAuth";
 import MyApplications from "./pages/MyApplications";
-import StudentProfile from "./pages/StudentProfile";
+import StudentProfile from "./pages/StudentPublicProfile";
 import ForgotPassword from "./pages/ForgotPassword";
 import ApplicationSubmission from "./pages/ApplicationSubmission";
 import BusinessDashboard from './pages/BusinessDashboard';
+import StudentProfile from "./pages/StudentProfile";
+import StudentPublicProfile from "./pages/StudentPublicProfile";
 
 // Configure client-side routes for student and business pages.
 function App() {
@@ -51,6 +53,12 @@ function App() {
 
         {/* Provide the business dashboard page route. */}
         <Route path="/business-dashboard" element={<BusinessDashboard />} />
+
+        {/* Provide the student's own profile page route. */}
+        <Route path="/profile" element={<StudentProfile />} />
+
+        {/* Provide the public student profile page route. */}
+        <Route path="/students/:id" element={<StudentPublicProfile />} />
       </Routes>
     </BrowserRouter>
   );

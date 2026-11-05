@@ -1,52 +1,71 @@
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/StudentDashboard.css";
 
-// Provide sample work orders for the dashboard until live data is available.
-const workOrders = [
-  {
-    id: 1,
-    title: "Inventory tracker web app",
-    status: "New",
-    category: "Web",
-    business: "[Business name]",
-    description: "[Short project summary goes here.]",
-  },
-  {
-    id: 2,
-    title: "Sales report dashboard",
-    status: "Paid",
-    category: "Data",
-    business: "[Business name]",
-    description: "[Short project summary goes here.]",
-  },
-  {
-    id: 3,
-    title: "Appointment booking app",
-    status: "Open",
-    category: "Mobile",
-    business: "[Business name]",
-    description: "[Short project summary goes here.]",
-  },
-];
+const API_URL = "http://localhost:3000";
 
-// Define the categories available in the dashboard filter controls.
-const categories = ["All", "Web", "Data", "Mobile"];
-
+// Categories will come from the actual work orders.
 function StudentDashboard() {
-  // Track the selected category to keep the displayed orders in sync.
+  const [workOrders, setWorkOrders] = useState([]);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Show every order for "All" or only orders matching the selected category.
+  // Fetch real work orders from Max's Express backend.
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchWorkOrders() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(`${API_URL}/api/work-orders`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to load work orders.");
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error("Unexpected response from the server.");
+        }
+
+        setWorkOrders(data);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error fetching work orders:", err);
+          setError("Unable to load work orders. Please try again.");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchWorkOrders();
+
+    return () => controller.abort();
+  }, []);
+
+  // Generate category filters from the database.
+  const categories = [
+    "All",
+    ...new Set(workOrders.map((order) => order.category).filter(Boolean)),
+  ];
+
   const filteredOrders =
     activeCategory === "All"
       ? workOrders
       : workOrders.filter((order) => order.category === activeCategory);
 
   return (
-    // Group dashboard navigation and work order content on one page.
     <div className="student-dashboard-page">
-      {/* Provide brand navigation, page links, and a profile indicator. */}
       <header className="dashboard-navbar">
         <Link to="/" className="dashboard-logo">
           Launch<span>Pad</span>
@@ -55,20 +74,24 @@ function StudentDashboard() {
         <nav className="dashboard-nav-links">
           <Link to="/dashboard">Dashboard</Link>
           <Link to="/my-applications">My applications</Link>
-          <div className="dashboard-avatar" aria-label="Student profile">
+
+          <Link
+            to="/profile"
+            className="dashboard-avatar"
+            aria-label="Student profile"
+          >
             AB
-          </div>
+          </Link>
         </nav>
       </header>
 
-      {/* Introduce available work orders and provide category filters. */}
       <main className="dashboard-main">
         <h1>Open work orders</h1>
+
         <p className="dashboard-subtitle">
           Pick a project to see the full details and the business behind it.
         </p>
 
-        {/* Let students filter work orders by project category. */}
         <div className="dashboard-filters" aria-label="Filter work orders">
           {categories.map((category) => (
             <button
@@ -85,36 +108,59 @@ function StudentDashboard() {
           ))}
         </div>
 
-        {/* Display each order that matches the active category filter. */}
-        <div className="work-orders-grid">
-          {filteredOrders.map((order) => (
-            <article className="work-order-card" key={order.id}>
-              {/* Show the order's current status and project category. */}
-              <div className="work-order-badges">
-                <span className="work-order-status">{order.status}</span>
-                <span className="work-order-category">{order.category}</span>
-              </div>
+        {loading && (
+          <p className="dashboard-message" role="status">
+            Loading work orders...
+          </p>
+        )}
 
-              <h2>{order.title}</h2>
+        {error && (
+          <p className="dashboard-message" role="alert">
+            {error}
+          </p>
+        )}
 
-              {/* Identify the business associated with the work order. */}
-              <p className="work-order-business">
-                <span className="verified-check">✓</span>
-                {order.business}, verified
-              </p>
+        {!loading && !error && filteredOrders.length === 0 && (
+          <p className="dashboard-message">
+            No work orders available in this category yet.
+          </p>
+        )}
 
-              <p className="work-order-description">{order.description}</p>
+        {!loading && !error && (
+          <div className="work-orders-grid">
+            {filteredOrders.map((order) => (
+              <article className="work-order-card" key={order._id}>
+                <div className="work-order-badges">
+                  <span className="work-order-status">
+                    {order.status === "open" ? "Open" : order.status}
+                  </span>
 
-              {/* Link to the individual work order's detail page. */}
-              <Link
-                to={`/work-orders/${order.id}`}
-                className="view-details-button"
-              >
-                View details
-              </Link>
-            </article>
-          ))}
-        </div>
+                  <span className="work-order-category">
+                    {order.category || "Other"}
+                  </span>
+                </div>
+
+                <h2>{order.title}</h2>
+
+                <p className="work-order-business">
+                  {order.businessId?.businessProfile?.companyName ||
+                    "Business name unavailable"}
+                </p>
+
+                <p className="work-order-description">
+                  {order.description}
+                </p>
+
+                <Link
+                  to={`/work-orders/${order._id}`}
+                  className="view-details-button"
+                >
+                  View details
+                </Link>
+              </article>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
