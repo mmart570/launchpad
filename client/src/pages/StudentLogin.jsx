@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/StudentLogin.css";
@@ -104,23 +103,17 @@ function StudentLogin({ accountCreated = false }) {
             track record.
           </h1>
 
-          <p>
-            Log in to browse real work orders from verified businesses.
-          </p>
+          <p>Log in to browse real work orders from verified businesses.</p>
         </div>
 
-        <div className="login-panel-footer">
-          LaunchPad · Student portal
-        </div>
+        <div className="login-panel-footer">LaunchPad · Student portal</div>
       </section>
 
       <section className="login-form-panel">
         <div className="login-card">
           <h2>Welcome back</h2>
 
-          <p className="login-subtitle">
-            Log in to your student account.
-          </p>
+          <p className="login-subtitle">Log in to your student account.</p>
 
           {accountCreated && (
             <div className="login-success-message" role="status">
@@ -167,9 +160,7 @@ function StudentLogin({ accountCreated = false }) {
                 Remember me
               </label>
 
-              <Link to="/forgot-password">
-                Forgot password?
-              </Link>
+              <Link to="/forgot-password">Forgot password?</Link>
             </div>
 
             {error && (
@@ -188,8 +179,7 @@ function StudentLogin({ accountCreated = false }) {
           </form>
 
           <p className="login-signup-text">
-            New to LaunchPad?{" "}
-            <Link to="/signup">Create an account</Link>
+            New to LaunchPad? <Link to="/signup">Create an account</Link>
           </p>
         </div>
       </section>

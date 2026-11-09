@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/BusinessAuth.css";
@@ -95,9 +94,7 @@ function BusinessAuth() {
       }
 
       if (!result.userId || !result.token) {
-        throw new Error(
-          "The server did not return valid account credentials.",
-        );
+        throw new Error("The server did not return valid account credentials.");
       }
 
       if (result.role !== "business") {
@@ -139,8 +136,7 @@ function BusinessAuth() {
     } catch (error) {
       console.error("Business authentication failed:", error);
       setNotice(
-        error.message ||
-          "Something went wrong. Please check your connection.",
+        error.message || "Something went wrong. Please check your connection.",
       );
       setNoticeType("error");
     } finally {
@@ -240,9 +236,7 @@ function BusinessAuth() {
                 value={form.password}
                 onChange={handleChange}
                 autoComplete={
-                  activeTab === "signup"
-                    ? "new-password"
-                    : "current-password"
+                  activeTab === "signup" ? "new-password" : "current-password"
                 }
                 minLength={activeTab === "signup" ? 8 : undefined}
                 required

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import "../styles/WorkOrderDetails.css";
@@ -105,8 +104,7 @@ function WorkOrderDetails() {
   const budget = formatMoney(workOrder?.budget);
   const deadline = formatDate(workOrder?.deadline);
   const category = workOrder?.category || "Not specified";
-  const description =
-    workOrder?.description || "No description provided.";
+  const description = workOrder?.description || "No description provided.";
 
   return (
     <div className="work-details-page">
@@ -144,9 +142,7 @@ function WorkOrderDetails() {
 
             <div className="work-summary-item">
               <strong>Estimated time</strong>
-              <span className="work-summary-time">
-                Not specified
-              </span>
+              <span className="work-summary-time">Not specified</span>
             </div>
 
             <div className="work-summary-contact">
@@ -228,13 +224,11 @@ function WorkOrderDetails() {
                         </p>
 
                         <p>
-                          <strong>Business address:</strong>{" "}
-                          Not specified
+                          <strong>Business address:</strong> Not specified
                         </p>
 
                         <p>
-                          <strong>Overall rating:</strong>{" "}
-                          Not available
+                          <strong>Overall rating:</strong> Not available
                         </p>
 
                         <p>
@@ -273,19 +267,15 @@ function WorkOrderDetails() {
                     <div className="work-info-body">
                       <p>
                         <strong>Type of work:</strong>{" "}
-                        <span className="work-tag">
-                          {category}
-                        </span>
+                        <span className="work-tag">{category}</span>
                       </p>
 
                       <p>
-                        <strong>Additional types of work:</strong>{" "}
-                        Not specified
+                        <strong>Additional types of work:</strong> Not specified
                       </p>
 
                       <p>
-                        <strong>Service type:</strong>{" "}
-                        Not specified
+                        <strong>Service type:</strong> Not specified
                       </p>
                     </div>
                   </section>
@@ -294,9 +284,7 @@ function WorkOrderDetails() {
                     <h2>Work Order Qualifications</h2>
 
                     <div className="work-info-body">
-                      <p>
-                        Requirements have not been specified.
-                      </p>
+                      <p>Requirements have not been specified.</p>
                     </div>
                   </section>
 
@@ -307,8 +295,8 @@ function WorkOrderDetails() {
                       <p>
                         <em>
                           <u>
-                            Please read the ENTIRE scope of work
-                            before applying!
+                            Please read the ENTIRE scope of work before
+                            applying!
                           </u>
                         </em>
                       </p>
@@ -341,15 +329,11 @@ function WorkOrderDetails() {
                     <div className="work-payment-terms">
                       <h3>Payment Terms</h3>
 
-                      <p>
-                        Payment terms have not been specified.
-                      </p>
+                      <p>Payment terms have not been specified.</p>
 
                       <p>
-                        <strong>
-                          Estimated time to approval:
-                        </strong>{" "}
-                        Not specified
+                        <strong>Estimated time to approval:</strong> Not
+                        specified
                       </p>
 
                       <button
@@ -424,12 +408,8 @@ function WorkOrderDetails() {
 
                     <div className="work-info-body work-schedule">
                       <strong>Deadline: {deadline}</strong>
-                      <p>
-                        Start time: Not specified
-                      </p>
-                      <p>
-                        End time: Not specified
-                      </p>
+                      <p>Start time: Not specified</p>
+                      <p>End time: Not specified</p>
                     </div>
                   </section>
                 </aside>
@@ -439,9 +419,7 @@ function WorkOrderDetails() {
                 <h2>Messages</h2>
 
                 <div className="work-info-body">
-                  <p>
-                    Messaging is not connected to the backend yet.
-                  </p>
+                  <p>Messaging is not connected to the backend yet.</p>
                 </div>
               </section>
             )}

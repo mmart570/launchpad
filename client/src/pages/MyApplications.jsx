@@ -1,7 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/MyApplications.css";
+import ProfileDropdown from "../components/ProfileDropdown";
 
 const API_URL = "http://localhost:3000";
 
@@ -82,14 +82,11 @@ function MyApplications() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `${API_URL}/api/applications/my`,
-          {
-            headers: {
-              Authorization: `Bearer ${session.token}`,
-            },
+        const response = await fetch(`${API_URL}/api/applications/my`, {
+          headers: {
+            Authorization: `Bearer ${session.token}`,
           },
-        );
+        });
 
         const result = await response.json().catch(() => null);
 
@@ -101,9 +98,7 @@ function MyApplications() {
         }
 
         if (!Array.isArray(result)) {
-          throw new Error(
-            "The server returned unexpected application data.",
-          );
+          throw new Error("The server returned unexpected application data.");
         }
 
         if (!cancelled) {
@@ -111,9 +106,7 @@ function MyApplications() {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err.message || "Unable to load your applications.",
-          );
+          setError(err.message || "Unable to load your applications.");
         }
       } finally {
         if (!cancelled) {
@@ -134,39 +127,29 @@ function MyApplications() {
     activeFilter === "All"
       ? applications
       : applications.filter(
-          (application) =>
-            formatStatus(application.status) === activeFilter,
+          (application) => formatStatus(application.status) === activeFilter,
         );
 
   return (
     <div className="my-applications-page">
       {/* Student navigation */}
       <header className="my-applications-navbar">
-        <Link to="/" className="my-applications-logo">
+        <Link to="/dashboard" className="my-applications-logo">
           Launch<span>Pad</span>
         </Link>
 
-        <nav
-          className="my-applications-nav"
-          aria-label="Student navigation"
-        >
+        <nav className="my-applications-nav" aria-label="Student navigation">
           <Link to="/dashboard">Dashboard</Link>
 
-          <Link
-            to="/my-applications"
-            className="active"
-            aria-current="page"
-          >
+          <Link to="/my-applications" className="active" aria-current="page">
             My applications
           </Link>
 
-          <Link
-            to="/profile"
-            className="my-applications-avatar"
-            aria-label="My profile"
-          >
-            ST
-          </Link>
+          <ProfileDropdown
+            role="student"
+            initials="ST"
+            avatarClassName="my-applications-avatar"
+          />
         </nav>
       </header>
 
@@ -186,9 +169,7 @@ function MyApplications() {
             <button
               key={filter}
               type="button"
-              className={
-                activeFilter === filter ? "active" : ""
-              }
+              className={activeFilter === filter ? "active" : ""}
               onClick={() => setActiveFilter(filter)}
               aria-pressed={activeFilter === filter}
             >
@@ -209,16 +190,11 @@ function MyApplications() {
         {/* Error state */}
         {!loading && error && (
           <section className="my-applications-list">
-            <div
-              className="my-applications-empty"
-              role="alert"
-            >
+            <div className="my-applications-empty" role="alert">
               <p>{error}</p>
 
               {error.includes("Please log in") && (
-                <Link to="/login">
-                  Go to student login
-                </Link>
+                <Link to="/login">Go to student login</Link>
               )}
             </div>
           </section>
@@ -235,31 +211,25 @@ function MyApplications() {
                 const workOrder = application.workOrderId;
 
                 const workOrderId =
-                  typeof workOrder === "object" &&
-                  workOrder !== null
+                  typeof workOrder === "object" && workOrder !== null
                     ? workOrder._id
                     : workOrder;
 
                 const title =
-                  typeof workOrder === "object" &&
-                  workOrder !== null
-                    ? workOrder.title ||
-                      "Work order unavailable"
+                  typeof workOrder === "object" && workOrder !== null
+                    ? workOrder.title || "Work order unavailable"
                     : "Work order unavailable";
 
                 // The current /api/applications/my route
                 // does not populate the business profile.
-                const business = "Business details unavailable";
+                const business =
+                  workOrder?.businessId?.businessProfile?.companyName ||
+                  "Business details unavailable";
 
-                const status = formatStatus(
-                  application.status,
-                );
+                const status = formatStatus(application.status);
 
                 return (
-                  <article
-                    className="my-application-row"
-                    key={application._id}
-                  >
+                  <article className="my-application-row" key={application._id}>
                     <div
                       className="my-application-business-icon"
                       aria-hidden="true"
@@ -271,8 +241,7 @@ function MyApplications() {
                       <h2>{title}</h2>
 
                       <p>
-                        {business} · Applied{" "}
-                        {formatDate(application.createdAt)}
+                        {business} · Applied {formatDate(application.createdAt)}
                       </p>
                     </div>
 
@@ -299,6 +268,18 @@ function MyApplications() {
                       <span className="my-application-details">
                         Unavailable
                       </span>
+                    )}
+
+                    {/* Submit Work button for accepted, in-progress projects */}
+                    {application.status === "accepted" &&
+                      workOrder?.status === "in_progress" &&
+                      workOrderId && (
+                      <Link
+                        to={`/student/work-orders/${workOrderId}/submit`}
+                        className="my-applications-submit-work"
+                      >
+                        Submit Work
+                      </Link>
                     )}
                   </article>
                 );

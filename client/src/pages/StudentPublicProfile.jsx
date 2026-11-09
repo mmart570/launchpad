@@ -1,7 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import "../styles/StudentProfile.css";
+import ProfileDropdown from "../components/ProfileDropdown";
 
 const API_URL = "http://localhost:3000";
 
@@ -49,21 +49,16 @@ function StudentPublicProfile() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `${API_URL}/api/business/students/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const response = await fetch(`${API_URL}/api/business/students/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         const result = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(
-            result?.error || "Unable to load student profile.",
-          );
+          throw new Error(result?.error || "Unable to load student profile.");
         }
 
         if (!cancelled) {
@@ -92,58 +87,46 @@ function StudentPublicProfile() {
   const firstName = profile.firstName || "";
   const lastName = profile.lastName || "";
 
-  const fullName =
-    `${firstName} ${lastName}`.trim() || "Student";
+  const fullName = `${firstName} ${lastName}`.trim() || "Student";
 
   const initials =
-    `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() ||
-    "ST";
+    `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || "ST";
 
   const school = profile.school || "School not specified";
   const major = profile.major || "Major not specified";
 
   const graduationYear = profile.graduationYear;
 
-  const skills = Array.isArray(profile.skills)
-    ? profile.skills
-    : [];
+  const skills = Array.isArray(profile.skills) ? profile.skills : [];
 
   return (
     <div className="student-profile-page">
       <header className="student-profile-navbar">
-        <Link
-          to="/business-dashboard"
-          className="student-profile-logo"
-        >
+        <Link to="/business-dashboard" className="student-profile-logo">
           Launch<span>Pad</span>
         </Link>
 
-        <nav
-          className="student-profile-nav"
-          aria-label="Business navigation"
-        >
-          <Link to="/business-dashboard">
-            Dashboard
-          </Link>
+        <nav className="student-profile-nav" aria-label="Business navigation">
+          <Link to="/business-dashboard">Dashboard</Link>
 
-          <Link to="/businesses">
-            Post a work order
-          </Link>
+          <Link to="/businesses">Post a work order</Link>
+
+          <ProfileDropdown
+            role="business"
+            initials="BU"
+            avatarClassName="student-profile-nav-avatar"
+          />
         </nav>
       </header>
 
       <main className="student-profile-main">
-        {loading && (
-          <p>Loading student profile...</p>
-        )}
+        {loading && <p>Loading student profile...</p>}
 
         {!loading && error && (
           <div role="alert">
             <p>{error}</p>
 
-            <Link to="/business-dashboard">
-              Back to business dashboard
-            </Link>
+            <Link to="/business-dashboard">Back to business dashboard</Link>
           </div>
         )}
 
@@ -151,10 +134,7 @@ function StudentPublicProfile() {
           <>
             <section className="student-profile-card">
               <div className="student-profile-top">
-                <div
-                  className="student-profile-avatar"
-                  aria-hidden="true"
-                >
+                <div className="student-profile-avatar" aria-hidden="true">
                   {initials}
                 </div>
 
@@ -163,17 +143,13 @@ function StudentPublicProfile() {
 
                   <p>
                     {school} · {major}
-                    {graduationYear
-                      ? ` · Class of ${graduationYear}`
-                      : ""}
+                    {graduationYear ? ` · Class of ${graduationYear}` : ""}
                   </p>
 
                   <div className="student-profile-skills">
                     {skills.length > 0 ? (
                       skills.map((skill, index) => (
-                        <span key={`${skill}-${index}`}>
-                          {skill}
-                        </span>
+                        <span key={`${skill}-${index}`}>{skill}</span>
                       ))
                     ) : (
                       <span>Skills not added yet</span>
@@ -181,9 +157,7 @@ function StudentPublicProfile() {
                   </div>
 
                   {profile.bio && (
-                    <p style={{ marginTop: "12px" }}>
-                      {profile.bio}
-                    </p>
+                    <p style={{ marginTop: "12px" }}>{profile.bio}</p>
                   )}
                 </div>
               </div>
@@ -191,9 +165,7 @@ function StudentPublicProfile() {
               <div className="student-profile-stats">
                 <div className="student-profile-stat">
                   <span>Completed work orders</span>
-                  <strong>
-                    {student.completedOrders ?? 0}
-                  </strong>
+                  <strong>{student.completedOrders ?? 0}</strong>
                 </div>
 
                 <div className="student-profile-stat">
@@ -203,9 +175,7 @@ function StudentPublicProfile() {
 
                 <div className="student-profile-stat">
                   <span>Businesses worked with</span>
-                  <strong>
-                    {student.businessesWorkedWith ?? 0}
-                  </strong>
+                  <strong>{student.businessesWorkedWith ?? 0}</strong>
                 </div>
               </div>
             </section>
@@ -227,18 +197,15 @@ function StudentPublicProfile() {
                       <h3>{project.title}</h3>
 
                       <p className="student-portfolio-business">
-                        {project.businessId?.businessProfile
-                          ?.companyName || "Business"}
+                        {project.businessId?.businessProfile?.companyName ||
+                          "Business"}
                       </p>
 
                       <p className="student-portfolio-summary">
-                        {project.description ||
-                          "No project summary available."}
+                        {project.description || "No project summary available."}
                       </p>
 
-                      <Link
-                        to={`/work-orders/${project._id}`}
-                      >
+                      <Link to={`/work-orders/${project._id}`}>
                         View project
                       </Link>
                     </article>
@@ -246,16 +213,12 @@ function StudentPublicProfile() {
                 </div>
               ) : (
                 <div className="student-portfolio-grid">
-                  <p>
-                    No completed projects yet.
-                  </p>
+                  <p>No completed projects yet.</p>
                 </div>
               )}
             </section>
 
-            <Link to="/business-dashboard">
-              Back to business dashboard
-            </Link>
+            <Link to="/business-dashboard">Back to business dashboard</Link>
           </>
         )}
       </main>

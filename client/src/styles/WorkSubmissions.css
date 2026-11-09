@@ -1,0 +1,240 @@
+.ws-page {
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #14233b;
+  font-family: inherit;
+}
+.ws-navbar {
+  background: #10213b;
+  color: #fff;
+  padding: 18px max(24px, calc((100vw - 1160px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.ws-navbar nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.ws-navbar a {
+  color: #fff;
+  text-decoration: none;
+}
+.ws-logo {
+  font-size: 23px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.ws-logo span {
+  color: #25c36a;
+}
+.ws-logo small {
+  font-size: 11px;
+  font-weight: 400;
+}
+.ws-main {
+  max-width: 900px;
+  margin: 42px auto;
+  padding: 0 22px 60px;
+}
+.ws-main h1 {
+  font-size: 30px;
+  margin: 12px 0 4px;
+}
+.ws-main h2 {
+  font-size: 20px;
+  margin: 0 0 14px;
+}
+.ws-main h3 {
+  font-size: 15px;
+  margin: 20px 0 8px;
+}
+.ws-main a:not(.ws-back) {
+  overflow-wrap: anywhere;
+}
+.ws-back {
+  color: #2461ce;
+  text-decoration: none;
+  font-size: 14px;
+}
+.ws-muted {
+  color: #65748b;
+}
+.ws-card {
+  background: #fff;
+  border: 1px solid #e1e7ef;
+  border-radius: 14px;
+  padding: 25px;
+  margin-top: 22px;
+  box-shadow: 0 3px 12px rgba(18, 33, 59, 0.04);
+}
+.ws-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ws-pill {
+  display: inline-block;
+  background: #eaf0ff;
+  color: #2357b7;
+  border-radius: 100px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ws-preserve {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ws-card label {
+  display: block;
+  font-weight: 650;
+  font-size: 14px;
+  margin: 18px 0 8px;
+}
+.ws-card textarea,
+.ws-card input[type="url"] {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ccd6e5;
+  border-radius: 8px;
+  padding: 12px;
+  font: inherit;
+  background: #fff;
+  color: #14233b;
+}
+.ws-card textarea:focus,
+.ws-card input:focus {
+  outline: 2px solid #90b3fa;
+  outline-offset: 1px;
+}
+.ws-dropzone {
+  border: 2px dashed #aebfd5;
+  background: #f8fbff;
+  border-radius: 12px;
+  min-height: 185px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 20px;
+}
+.ws-dropzone.ws-dragging {
+  border-color: #2161ff;
+  background: #edf3ff;
+}
+.ws-dropzone small {
+  color: #64748b;
+}
+.ws-upload-icon {
+  font-size: 36px;
+  color: #2161ff;
+}
+.ws-primary,
+.ws-secondary {
+  cursor: pointer;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  padding: 12px 18px;
+}
+.ws-primary {
+  background: #2161ff;
+  color: #fff;
+  border: 1px solid #2161ff;
+}
+.ws-secondary {
+  background: #fff;
+  color: #2157b6;
+  border: 1px solid #a7b7cf;
+}
+.ws-primary:disabled,
+.ws-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.ws-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.ws-files {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+}
+.ws-files li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #e3e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.ws-link-button {
+  background: transparent;
+  color: #2161ff;
+  border: 0;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ws-error,
+.ws-success,
+.ws-info,
+.ws-feedback {
+  padding: 14px 16px;
+  border-radius: 9px;
+  margin: 16px 0;
+}
+.ws-error {
+  background: #fff0f0;
+  color: #a52626;
+}
+.ws-success {
+  background: #e8f8ef;
+  color: #166d3e;
+}
+.ws-info {
+  background: #edf3ff;
+  color: #2452a5;
+}
+.ws-feedback {
+  background: #fff7e7;
+  color: #77551b;
+}
+.ws-history-item {
+  border-top: 1px solid #e3e8f0;
+  padding: 16px 0;
+}
+.ws-history-item .ws-pill {
+  margin-left: 12px;
+}
+@media (max-width: 600px) {
+  .ws-navbar {
+    padding: 16px;
+    flex-wrap: wrap;
+  }
+  .ws-navbar nav {
+    gap: 12px;
+  }
+  .ws-main {
+    margin: 24px auto;
+  }
+  .ws-card {
+    padding: 18px;
+  }
+  .ws-actions > * {
+    flex: 1;
+  }
+}

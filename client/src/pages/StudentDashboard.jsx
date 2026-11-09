@@ -1,7 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/StudentDashboard.css";
+import ProfileDropdown from "../components/ProfileDropdown";
 
 const API_URL = "http://localhost:3000";
 
@@ -31,11 +31,14 @@ function StudentDashboard() {
 
         const data = await response.json();
 
-        if (!Array.isArray(data)) {
+        // Extract the work orders array from the backend response.
+        const orders = Array.isArray(data) ? data : data?.workOrders;
+
+        if (!Array.isArray(orders)) {
           throw new Error("Unexpected response from the server.");
         }
 
-        setWorkOrders(data);
+        setWorkOrders(orders);
       } catch (err) {
         if (err.name !== "AbortError") {
           console.error("Error fetching work orders:", err);
@@ -67,21 +70,19 @@ function StudentDashboard() {
   return (
     <div className="student-dashboard-page">
       <header className="dashboard-navbar">
-        <Link to="/" className="dashboard-logo">
+        <Link to="/dashboard" className="dashboard-logo">
           Launch<span>Pad</span>
         </Link>
 
         <nav className="dashboard-nav-links">
           <Link to="/dashboard">Dashboard</Link>
-          <Link to="/my-applications">My applications</Link>
+          <Link to="/my-applications">My Applications</Link>
 
-          <Link
-            to="/profile"
-            className="dashboard-avatar"
-            aria-label="Student profile"
-          >
-            AB
-          </Link>
+          <ProfileDropdown
+            role="student"
+            initials="AB"
+            avatarClassName="dashboard-avatar"
+          />
         </nav>
       </header>
 
@@ -147,9 +148,7 @@ function StudentDashboard() {
                     "Business name unavailable"}
                 </p>
 
-                <p className="work-order-description">
-                  {order.description}
-                </p>
+                <p className="work-order-description">{order.description}</p>
 
                 <Link
                   to={`/work-orders/${order._id}`}

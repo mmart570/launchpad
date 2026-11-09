@@ -336,3 +336,22 @@
     font-size: 14px;
   }
 }
+
+.my-applications-submit-work {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 18px;
+  border-radius: 8px;
+  background-color: #2161ff;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.my-applications-submit-work:hover {
+  background-color: #174dcc;
+}

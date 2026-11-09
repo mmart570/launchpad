@@ -1,7 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import "../styles/ApplicationSubmission.css";
+import ProfileDropdown from "../components/ProfileDropdown";
 
 const API_URL = "http://localhost:3000";
 
@@ -48,16 +48,12 @@ function ApplicationSubmission() {
         setLoadingOrder(true);
         setOrderError("");
 
-        const response = await fetch(
-          `${API_URL}/api/work-orders/${id}`,
-        );
+        const response = await fetch(`${API_URL}/api/work-orders/${id}`);
 
         const result = await response.json().catch(() => null);
 
         if (!response.ok) {
-          throw new Error(
-            result?.error || "Unable to load this work order.",
-          );
+          throw new Error(result?.error || "Unable to load this work order.");
         }
 
         if (!cancelled) {
@@ -102,9 +98,7 @@ function ApplicationSubmission() {
     const session = getStudentSession();
 
     if (!session) {
-      setNotice(
-        "Please log in with your student account before applying.",
-      );
+      setNotice("Please log in with your student account before applying.");
       return;
     }
 
@@ -147,8 +141,7 @@ function ApplicationSubmission() {
       console.error("Application submission failed:", error);
 
       setNotice(
-        error.message ||
-          "Unable to submit your application. Please try again.",
+        error.message || "Unable to submit your application. Please try again.",
       );
     } finally {
       setSubmitting(false);
@@ -168,7 +161,7 @@ function ApplicationSubmission() {
     <div className="application-submission-page">
       {/* Student navigation */}
       <header className="application-submission-navbar">
-        <Link to="/" className="application-submission-logo">
+        <Link to="/dashboard" className="application-submission-logo">
           Launch<span>Pad</span>
         </Link>
 
@@ -180,19 +173,13 @@ function ApplicationSubmission() {
             Dashboard
           </Link>
 
-          <Link to="/my-applications">
-            My applications
-          </Link>
+          <Link to="/my-applications">My Applications</Link>
 
-          <Link to="/profile">Profile</Link>
-
-          <Link
-            to="/profile"
-            className="application-submission-avatar"
-            aria-label="My profile"
-          >
-            ST
-          </Link>
+          <ProfileDropdown
+            role="student"
+            initials="ST"
+            avatarClassName="application-submission-avatar"
+          />
         </nav>
       </header>
 
@@ -207,9 +194,7 @@ function ApplicationSubmission() {
                 <div className="application-submission-divider" />
 
                 <div className="application-submission-work-order">
-                  <div className="application-submission-business-icon">
-                    BN
-                  </div>
+                  <div className="application-submission-business-icon">BN</div>
 
                   <div>
                     {loadingOrder ? (
@@ -277,24 +262,17 @@ function ApplicationSubmission() {
                       workOrder.status !== "open"
                     }
                   >
-                    {submitting
-                      ? "Submitting..."
-                      : "Submit application"}
+                    {submitting ? "Submitting..." : "Submit application"}
                   </button>
 
                   {notice && (
-                    <p
-                      className="application-submission-notice"
-                      role="alert"
-                    >
+                    <p className="application-submission-notice" role="alert">
                       {notice}
                     </p>
                   )}
 
                   {notice.includes("Please log in") && (
-                    <Link to="/login">
-                      Go to student login
-                    </Link>
+                    <Link to="/login">Go to student login</Link>
                   )}
                 </form>
               </div>
@@ -304,7 +282,6 @@ function ApplicationSubmission() {
           {/* STEP 2: Show confirmation only after success. */}
           {submitted && (
             <section className="application-submission-section">
-
               <div className="application-confirmation-card">
                 <div
                   className="application-confirmation-check"
@@ -316,24 +293,22 @@ function ApplicationSubmission() {
                 <h2>Application submitted!</h2>
 
                 <p className="application-confirmation-description">
-                  Your application has been saved and sent to the
-                  business for review.
+                  Your application has been saved and sent to the business for
+                  review.
                 </p>
 
                 <div className="application-confirmation-steps">
                   <p>
-                    <span>✓</span> The business can review your
-                    application.
+                    <span>✓</span> The business can review your application.
                   </p>
 
                   <p>
-                    <span>✓</span> You can check your application
-                    status in My applications.
-                  </p>
-
-                  <p>
-                    <span>✓</span> Accepted work will appear in My
+                    <span>✓</span> You can check your application status in My
                     applications.
+                  </p>
+
+                  <p>
+                    <span>✓</span> Accepted work will appear in My applications.
                   </p>
                 </div>
 

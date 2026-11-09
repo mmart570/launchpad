@@ -17,6 +17,7 @@ const validators = {
     // if (!/\.edu$/i.test(value)) return "Use your school email ending in .edu.";
     return "";
   },
+  school: (v) => (v.trim() ? "" : "Enter your university."),
   major: (v) => (v.trim() ? "" : "Enter your major."),
   year: (v) => (v ? "" : "Select your graduation year."),
   password: (v) => {
@@ -30,13 +31,21 @@ const validators = {
 };
 
 // Use a shared field order for validation and a fresh baseline for form resets.
-const FIELD_IDS = ["name", "email", "major", "year", "password"];
-const EMPTY_VALUES = { name: "", email: "", major: "", year: "", password: "" };
+const FIELD_IDS = ["name", "email", "school", "major", "year", "password"];
+const EMPTY_VALUES = {
+  name: "",
+  email: "",
+  school: "",
+  major: "",
+  year: "",
+  skills: "",
+  bio: "",
+  password: "",
+};
 
 /* ---------- API call ---------- */
 
-// Replace the body of this function with your real sign-up request,
-// or pass your own function to the component through the onSignUp prop.
+// Register the student using the existing Express API.
 async function defaultCreateAccount(data) {
   const nameParts = data.name.trim().split(/\s+/);
   const firstName = nameParts[0];
@@ -54,7 +63,14 @@ async function defaultCreateAccount(data) {
       studentProfile: {
         firstName,
         lastName,
+        school: data.school.trim(),
         major: data.major.trim(),
+        graduationYear: Number(data.graduationYear),
+        skills: data.skills
+          .split(",")
+          .map((skill) => skill.trim())
+          .filter(Boolean),
+        bio: data.bio.trim(),
       },
     }),
   });
@@ -77,7 +93,6 @@ async function defaultCreateAccount(data) {
 
   return result;
 }
-
 
 /* ---------- Component ---------- */
 
@@ -119,7 +134,6 @@ export default function StudentSignup({
     event.preventDefault();
     setStatus("idle");
     setServerError("");
-    
 
     let firstInvalid = null;
     FIELD_IDS.forEach((id) => {
@@ -136,7 +150,10 @@ export default function StudentSignup({
       await onSignUp({
         name: values.name.trim(),
         email: values.email.trim(),
+        school: values.school.trim(),
         major: values.major.trim(),
+        skills: values.skills,
+        bio: values.bio.trim(),
         graduationYear: values.year,
         password: values.password,
       });
@@ -249,6 +266,18 @@ export default function StudentSignup({
                 {renderError("email")}
               </div>
 
+              <div className="su-field">
+                <label htmlFor="school">University / School</label>
+                <input
+                  className="su-input"
+                  type="text"
+                  autoComplete="organization"
+                  placeholder="UC Riverside"
+                  {...fieldProps("school")}
+                />
+                {renderError("school")}
+              </div>
+
               <div className="su-row">
                 <div className="su-field">
                   <label htmlFor="major">Major</label>
@@ -272,6 +301,27 @@ export default function StudentSignup({
                   </select>
                   {renderError("year")}
                 </div>
+              </div>
+
+              <div className="su-field">
+                <label htmlFor="skills">Skills (optional)</label>
+                <input
+                  className="su-input"
+                  type="text"
+                  placeholder="React, JavaScript, Python"
+                  {...fieldProps("skills")}
+                />
+                <p className="su-hint">Separate skills with commas.</p>
+              </div>
+
+              <div className="su-field">
+                <label htmlFor="bio">About me (optional)</label>
+                <textarea
+                  className="su-input"
+                  rows={3}
+                  placeholder="Tell businesses about your interests and experience..."
+                  {...fieldProps("bio")}
+                />
               </div>
 
               {/* Allow password visibility while keeping the password hint available. */}
@@ -307,7 +357,7 @@ export default function StudentSignup({
 
             {/* Offer a direct route to sign in for returning students. */}
             <p className="su-alt">
-              Already have an account? <Link to="/login">Log in</Link>
+              Already have an account? <Link to={loginHref}>Log in</Link>
             </p>
           </div>
         </main>

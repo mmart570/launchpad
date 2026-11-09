@@ -1,4 +1,3 @@
-
 .business-dashboard-page {
   min-height: 100vh;
   background: #f3f6fa;
@@ -363,5 +362,110 @@
 
   .business-dashboard-panel > h2 {
     padding: 18px 15px;
+  }
+}
+
+.status-draft {
+  background-color: #e2e8f0;
+  color: #475569;
+}
+
+/* Work order status tabs */
+.business-dashboard-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  overflow-x: auto;
+}
+.business-dashboard-tab {
+  border: 1px solid #dbe3ef;
+  border-radius: 9px;
+  background: #fff;
+  color: #42536b;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.business-dashboard-tab.active {
+  border-color: #2161ff;
+  background: #eef3ff;
+  color: #2161ff;
+}
+.business-dashboard-tab span {
+  margin-left: 4px;
+  font-size: 12px;
+}
+.business-dashboard-order {
+  flex-wrap: wrap;
+}
+.business-dashboard-delete {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid #dc3545;
+  border-radius: 9px;
+  background: #fff;
+  color: #b42333;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.business-dashboard-delete:hover:not(:disabled) {
+  background: #fff0f1;
+}
+.business-dashboard-delete:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.business-dashboard-status.status-draft {
+  background: #e2e8f0;
+  color: #475569;
+}
+.business-dashboard-accept {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.business-dashboard-tab:focus,
+.business-dashboard-tab:focus-visible {
+  outline: none;
+}
+
+.business-dashboard-tab.active {
+  border-color: #2161ff;
+  background: #eef3ff;
+  color: #2161ff;
+}
+
+/* Business navbar links and profile dropdown */
+.business-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.business-page-nav-avatar {
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  background: #2161ff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .business-nav {
+    gap: 12px;
   }
 }

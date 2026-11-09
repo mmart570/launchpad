@@ -1,7 +1,7 @@
-
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import "../styles/BusinessPage.css";
+import ProfileDropdown from "../components/ProfileDropdown";
 
 const API_URL = "http://localhost:3000";
 
@@ -14,6 +14,8 @@ const initialForm = {
   pay: "",
   hours: "",
   deadline: "",
+  submissionInstructions: "",
+  allowEmptySubmission: false,
 };
 
 function getBusinessSession() {
@@ -39,17 +41,98 @@ function getBusinessSession() {
 
 function BusinessPage() {
   const [form, setForm] = useState(initialForm);
+  const navigate = useNavigate();
+  const { id: editId } = useParams();
+  const isEditing = Boolean(editId);
+  const [existingStatus, setExistingStatus] = useState(null);
+  const [loadingExisting, setLoadingExisting] = useState(false);
+
+  useEffect(() => {
+    if (!editId) return;
+
+    const session = getBusinessSession();
+
+    if (!session) {
+      setNotice("Please log in with a business account.");
+      setNoticeType("error");
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadExistingOrder() {
+      setLoadingExisting(true);
+
+      try {
+        const response = await fetch(`${API_URL}/api/business/work-orders`, {
+          headers: {
+            Authorization: `Bearer ${session.token}`,
+          },
+        });
+
+        const orders = await response.json();
+
+        if (!response.ok || !Array.isArray(orders)) {
+          throw new Error("Unable to load work order.");
+        }
+
+        const order = orders.find((item) => item._id === editId);
+
+        if (!order) {
+          throw new Error("Work order not found.");
+        }
+
+        if (["completed", "closed"].includes(order.status)) {
+          throw new Error("Completed work orders cannot be edited.");
+        }
+
+        if (cancelled) return;
+
+        setExistingStatus(order.status);
+
+        setForm({
+          title: order.title || "",
+          description: order.description || "",
+          workType: order.category || "",
+          serviceType: order.serviceType || "",
+          skills: Array.isArray(order.skills) ? order.skills.join(", ") : "",
+          pay: order.budget == null ? "" : String(order.budget),
+          hours:
+            order.estimatedHours == null ? "" : String(order.estimatedHours),
+          deadline: order.deadline
+            ? new Date(order.deadline).toISOString().slice(0, 10)
+            : "",
+          submissionInstructions: order.submissionInstructions || "",
+          allowEmptySubmission: order.allowEmptySubmission === true,
+        });
+      } catch (error) {
+        if (!cancelled) {
+          setNotice(error.message);
+          setNoticeType("error");
+        }
+      } finally {
+        if (!cancelled) setLoadingExisting(false);
+      }
+    }
+
+    loadExistingOrder();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [editId]);
+
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("");
   const [loading, setLoading] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState(null);
 
   function updateField(event) {
-    const { name, value } = event.target;
+    const { name, value, type, checked } = event.target;
 
     setForm((previous) => ({
       ...previous,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
 
     setNotice("");
@@ -60,6 +143,27 @@ function BusinessPage() {
   const payAmount = Number(form.pay) || 0;
   const serviceCharges = 0;
   const total = payAmount + serviceCharges;
+
+  function buildPayload(status) {
+    return {
+      title: form.title.trim(),
+      description: form.description.trim(),
+      category: form.workType.trim(),
+      serviceType: form.serviceType.trim(),
+      skills: form.skills
+        .split(",")
+        .map((skill) => skill.trim())
+        .filter(Boolean),
+      budget: form.pay === "" ? null : Number(form.pay),
+      estimatedHours: form.hours === "" ? null : Number(form.hours),
+      deadline: form.deadline
+        ? new Date(`${form.deadline}T12:00:00.000Z`).toISOString()
+        : null,
+      submissionInstructions: form.submissionInstructions.trim(),
+      allowEmptySubmission: form.allowEmptySubmission,
+      status,
+    };
+  }
 
   async function handlePost(event) {
     event.preventDefault();
@@ -125,18 +229,18 @@ function BusinessPage() {
     setLoading(true);
 
     try {
-      // These are the fields supported by the current work order API.
-      // The backend should derive businessId from the authenticated token.
-      const payload = {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        category: form.workType.trim(),
-        budget: Number(form.pay),
-        deadline: deadline.toISOString(),
-      };
+      const payload = buildPayload("open");
 
-      const response = await fetch(`${API_URL}/api/work-orders`, {
-        method: "POST",
+      let url = `${API_URL}/api/work-orders`;
+      let method = "POST";
+
+      if (isEditing) {
+        url = `${API_URL}/api/business/work-orders/${editId}`;
+        method = "PATCH";
+      }
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.token}`,
@@ -144,28 +248,52 @@ function BusinessPage() {
         body: JSON.stringify(payload),
       });
 
-      const result = await response.json().catch(() => null);
+      const result = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(
-          result?.error ||
-            result?.message ||
-            `Unable to post work order (${response.status}).`,
-        );
+        throw new Error(result.error || "Unable to save work order.");
       }
 
-      setCreatedOrderId(result?._id || result?.workOrder?._id || null);
-      setNotice(
-        "Work order posted successfully! Students can now find it on their dashboard.",
-      );
-      setNoticeType("success");
-      setForm(initialForm);
+      const savedId = result._id || editId;
+
+      if (isEditing && existingStatus === "draft") {
+        const publishResponse = await fetch(
+          `${API_URL}/api/business/work-orders/${savedId}/publish`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${session.token}`,
+            },
+          },
+        );
+
+        const published = await publishResponse.json().catch(() => ({}));
+
+        if (!publishResponse.ok) {
+          throw new Error(
+            published.error || "Draft saved, but publishing failed.",
+          );
+        }
+
+        navigate(`/businesses/success`, {
+          state: {
+            workOrderId: savedId,
+            title: published.title,
+          },
+        });
+      } else {
+        navigate(isEditing ? "/business-dashboard" : "/businesses/success", {
+          state: {
+            workOrderId: savedId,
+            title: result.title,
+          },
+        });
+      }
     } catch (error) {
       console.error("Work order posting failed:", error);
 
       setNotice(
-        error.message ||
-          "Unable to post your work order. Please try again.",
+        error.message || "Unable to post your work order. Please try again.",
       );
       setNoticeType("error");
     } finally {
@@ -173,10 +301,46 @@ function BusinessPage() {
     }
   }
 
-  function handleSaveDraft() {
-    setNotice("Draft saving is not available in the backend yet.");
-    setNoticeType("info");
-    setCreatedOrderId(null);
+  async function handleSaveDraft() {
+    const session = getBusinessSession();
+
+    if (!session) {
+      setNotice("Please log in with a business account.");
+      setNoticeType("error");
+      return;
+    }
+
+    setLoading(true);
+    setNotice("");
+
+    try {
+      const response = await fetch(
+        isEditing
+          ? `${API_URL}/api/business/work-orders/${editId}`
+          : `${API_URL}/api/work-orders`,
+        {
+          method: isEditing ? "PATCH" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.token}`,
+          },
+          body: JSON.stringify(buildPayload("draft")),
+        },
+      );
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to save draft.");
+      }
+
+      navigate("/business-dashboard");
+    } catch (error) {
+      setNotice(error.message || "Unable to save draft.");
+      setNoticeType("error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -187,20 +351,25 @@ function BusinessPage() {
           <small>for Business</small>
         </Link>
 
-        <Link
-          to="/business-dashboard"
-          className="business-account-name"
-        >
-          Business dashboard
-        </Link>
+        <nav className="business-nav">
+          <Link to="/business-dashboard" className="business-account-name">
+            Business Dashboard
+          </Link>
+
+          <ProfileDropdown
+            role="business"
+            initials="BU"
+            avatarClassName="business-page-nav-avatar"
+          />
+        </nav>
       </header>
 
       <main className="business-main">
         <div className="business-page-heading">
-          <h1>Post a work order</h1>
+          <h1>Post a Work Order</h1>
           <p>
-            Describe the work and set the pay. Students will see it on
-            their dashboard.
+            Describe the work and set the pay. Students will see it on their
+            dashboard.
           </p>
         </div>
 
@@ -214,9 +383,7 @@ function BusinessPage() {
               <h2>Overview</h2>
 
               <div className="business-card-body">
-                <label htmlFor="business-title">
-                  Work order title
-                </label>
+                <label htmlFor="business-title">Work order title</label>
                 <input
                   id="business-title"
                   name="title"
@@ -224,7 +391,6 @@ function BusinessPage() {
                   placeholder="e.g., Inventory tracker web app"
                   value={form.title}
                   onChange={updateField}
-                  required
                 />
 
                 <label htmlFor="business-description">
@@ -237,7 +403,6 @@ function BusinessPage() {
                   placeholder="Describe the scope of work, deliverables, and tools."
                   value={form.description}
                   onChange={updateField}
-                  required
                 />
               </div>
             </section>
@@ -248,9 +413,7 @@ function BusinessPage() {
               <div className="business-card-body">
                 <div className="business-two-fields">
                   <div>
-                    <label htmlFor="business-work-type">
-                      Type of work
-                    </label>
+                    <label htmlFor="business-work-type">Type of work</label>
                     <input
                       id="business-work-type"
                       name="workType"
@@ -258,14 +421,11 @@ function BusinessPage() {
                       placeholder="e.g., Web Development"
                       value={form.workType}
                       onChange={updateField}
-                      required
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="business-service-type">
-                      Service type
-                    </label>
+                    <label htmlFor="business-service-type">Service type</label>
                     <input
                       id="business-service-type"
                       name="serviceType"
@@ -277,9 +437,7 @@ function BusinessPage() {
                   </div>
                 </div>
 
-                <label htmlFor="business-skills">
-                  Required skills
-                </label>
+                <label htmlFor="business-skills">Required Skills</label>
                 <input
                   id="business-skills"
                   name="skills"
@@ -296,9 +454,7 @@ function BusinessPage() {
 
               <div className="business-card-body business-three-fields">
                 <div>
-                  <label htmlFor="business-pay">
-                    Fixed pay ($)
-                  </label>
+                  <label htmlFor="business-pay">Fixed pay ($)</label>
                   <input
                     id="business-pay"
                     name="pay"
@@ -308,14 +464,11 @@ function BusinessPage() {
                     placeholder="Amount"
                     value={form.pay}
                     onChange={updateField}
-                    required
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="business-hours">
-                    Estimated hours
-                  </label>
+                  <label htmlFor="business-hours">Estimated hours</label>
                   <input
                     id="business-hours"
                     name="hours"
@@ -329,18 +482,49 @@ function BusinessPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="business-deadline">
-                    Deadline
-                  </label>
+                  <label htmlFor="business-deadline">Deadline</label>
                   <input
                     id="business-deadline"
                     name="deadline"
                     type="date"
                     value={form.deadline}
                     onChange={updateField}
-                    required
                   />
                 </div>
+              </div>
+            </section>
+
+            <section className="business-form-card">
+              <h2>Submission Requirements</h2>
+              <div className="business-card-body">
+                <label htmlFor="business-submission-instructions">
+                  Instructions for submitting completed work (optional)
+                </label>
+                <textarea
+                  id="business-submission-instructions"
+                  name="submissionInstructions"
+                  rows="4"
+                  maxLength={10000}
+                  placeholder="e.g., Upload your project ZIP and screenshots, or explain how the completed work can be verified."
+                  value={form.submissionInstructions}
+                  onChange={updateField}
+                />
+
+                <label className="business-empty-submission-option" htmlFor="business-allow-empty">
+                  <input
+                    id="business-allow-empty"
+                    name="allowEmptySubmission"
+                    type="checkbox"
+                    checked={form.allowEmptySubmission}
+                    onChange={updateField}
+                  />
+                  <span>Allow students to submit without notes, links, or files</span>
+                </label>
+                <p className="business-submission-help">
+                  {form.allowEmptySubmission
+                    ? "Students can submit with all fields empty. You will still review and approve their work."
+                    : "Students must provide notes, a project link, or at least one attachment."}
+                </p>
               </div>
             </section>
           </div>
@@ -368,27 +552,33 @@ function BusinessPage() {
                 <button
                   type="submit"
                   className="business-post-button"
-                  disabled={loading}
+                  disabled={loading || loadingExisting}
                 >
                   {loading
-                    ? "Posting work order..."
-                    : "Post work order"}
+                    ? "Saving..."
+                    : isEditing && existingStatus === "draft"
+                      ? "Publish work order"
+                      : isEditing
+                        ? "Save changes"
+                        : "Post work order"}
                 </button>
 
-                <button
-                  type="button"
-                  className="business-draft-button"
-                  onClick={handleSaveDraft}
-                  disabled={loading}
-                >
-                  Save draft
-                </button>
+                {(!isEditing || existingStatus === "draft") && (
+                  <button
+                    type="button"
+                    className="business-draft-button"
+                    onClick={handleSaveDraft}
+                    disabled={loading || loadingExisting}
+                  >
+                    {loading ? "Saving..." : "Save draft"}
+                  </button>
+                )}
               </div>
             </section>
 
             <div className="business-tip-card">
-              <strong>Tip:</strong> Clear scope and deliverables help
-              students apply with confidence.
+              <strong>Tip:</strong> Clear scope and deliverables help students
+              apply with confidence.
             </div>
 
             {notice && (
@@ -398,24 +588,17 @@ function BusinessPage() {
               >
                 <p>{notice}</p>
 
-                {noticeType === "error" &&
-                  notice.includes("Please log in") && (
-                    <Link to="/business-auth">
-                      Go to business login
-                    </Link>
-                  )}
+                {noticeType === "error" && notice.includes("Please log in") && (
+                  <Link to="/business-auth">Go to business login</Link>
+                )}
 
                 {noticeType === "success" && (
                   <p>
-                    <Link to="/dashboard">
-                      View student dashboard
-                    </Link>
+                    <Link to="/dashboard">View student dashboard</Link>
                     {createdOrderId && (
                       <>
                         {" · "}
-                        <Link
-                          to={`/work-orders/${createdOrderId}`}
-                        >
+                        <Link to={`/work-orders/${createdOrderId}`}>
                           View work order details
                         </Link>
                       </>

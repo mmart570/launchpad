@@ -4,11 +4,15 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const { randomBytes } = require("crypto");
 const mongoose = require("mongoose");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 
 const Session = require("./Schemas/session.js");
 const User = require("./Schemas/User.js");
 const WorkOrder = require("./Schemas/WorkOrder.js");
 const Application = require("./Schemas/Application.js");
+const WorkSubmission = require("./Schemas/WorkSubmission.js");
 
 const port = Number(process.env.PORT) || 3000;
 const mongoUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017";
@@ -40,6 +44,46 @@ function requireRole(role) {
     }
     next();
   };
+}
+
+// Private upload directory: do not expose this through express.static.
+const uploadDirectory = path.join(__dirname, "private_uploads");
+fs.mkdirSync(uploadDirectory, { recursive: true });
+const permittedExtensions = new Set([
+  ".pdf", ".doc", ".docx", ".txt", ".md", ".csv", ".xlsx", ".pptx",
+  ".zip", ".png", ".jpg", ".jpeg", ".webp", ".gif",
+  ".js", ".jsx", ".ts", ".tsx", ".css", ".json", ".py", ".java",
+  ".c", ".cpp", ".h", ".html", ".sql", ".xml", ".sh"
+]);
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, uploadDirectory),
+    filename: (_req, _file, cb) => cb(null, randomBytes(20).toString("hex")),
+  }),
+  limits: { files: 10, fileSize: 20 * 1024 * 1024, fields: 5, fieldSize: 10000 },
+  fileFilter: (_req, file, cb) => {
+    const extension = path.extname(file.originalname).toLowerCase();
+    if (!permittedExtensions.has(extension)) return cb(new Error("Unsupported file type: " + extension));
+    cb(null, true);
+  },
+}).array("files", 10);
+function cleanupUploads(files = []) {
+  return Promise.all(files.map((file) => fs.promises.unlink(file.path).catch(() => {})));
+}
+function receiveFiles(req, res, next) {
+  upload(req, res, async (err) => {
+    if (err) {
+      await cleanupUploads(req.files);
+      return res.status(400).json({ error: err.message || "Invalid attachments." });
+    }
+    next();
+  });
+}
+function validId(value) { return mongoose.Types.ObjectId.isValid(value); }
+function validProjectUrl(value) {
+  if (!value) return true;
+  try { return ["http:", "https:"].includes(new URL(value).protocol); }
+  catch { return false; }
 }
 
 function createApp() {
@@ -104,19 +148,106 @@ app.get('/api/auth/me', requireUser, async (req, res) => {
   res.json( { _id: req.user._id, email: req.user.email, role: req.user.role, studentProfile: req.user.studentProfile, businessProfile: req.user.businessProfile,});
 });
 
-app.post('/api/work-orders', requireUser, requireRole('business'), async (req, res) => {
-  try {
-    const { title, description, category, budget, deadline } = req.body;
-    if (!title || !description || !category || !budget) {
-      return res.status(400).json({ error: "Title, description, category, and budget are all required fields."});
+
+function parseWorkOrderFields(body, isDraft) {
+  const title = String(body.title ?? "").trim();
+  const description = String(body.description ?? "").trim();
+  const category = String(body.category ?? "").trim();
+  const serviceType = String(body.serviceType ?? "").trim();
+  const submissionInstructions = String(body.submissionInstructions ?? "").trim();
+  const allowEmptySubmission = body.allowEmptySubmission === true;
+
+  const budget =
+    body.budget === "" || body.budget == null
+      ? null
+      : Number(body.budget);
+
+  const estimatedHours =
+    body.estimatedHours === "" || body.estimatedHours == null
+      ? null
+      : Number(body.estimatedHours);
+
+  const skills = Array.isArray(body.skills)
+    ? body.skills.map((skill) => String(skill).trim()).filter(Boolean)
+    : [];
+
+  const deadline =
+    body.deadline ? new Date(body.deadline) : null;
+
+  if (budget !== null && (!Number.isFinite(budget) || budget <= 0)) {
+    throw new Error("Budget must be greater than zero.");
+  }
+
+  if (
+    estimatedHours !== null &&
+    (!Number.isFinite(estimatedHours) || estimatedHours < 0)
+  ) {
+    throw new Error("Estimated hours must be zero or greater.");
+  }
+
+  if (deadline && Number.isNaN(deadline.getTime())) {
+    throw new Error("Invalid deadline.");
+  }
+
+  if (!isDraft) {
+    if (!title || !description || !category || budget === null) {
+      throw new Error(
+        "Title, description, category, and budget are required."
+      );
     }
 
-    const workOrder = await WorkOrder.create({ title, description, category, budget: Number(budget), deadline, businessId: req.userId, });
-    res.status(201).json(workOrder);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create a work order."});
+    if (!deadline || deadline.getTime() <= Date.now()) {
+      throw new Error("Please select a future deadline.");
+    }
   }
-});
+
+  return {
+    title,
+    description,
+    category,
+    budget,
+    deadline,
+    serviceType,
+    skills,
+    estimatedHours,
+    submissionInstructions,
+    allowEmptySubmission,
+  };
+}
+
+app.post(
+  "/api/work-orders",
+  requireUser,
+  requireRole("business"),
+  async (req, res) => {
+    try {
+      const isDraft = req.body.status === "draft";
+
+      if (
+        req.body.status !== undefined &&
+        !["draft", "open"].includes(req.body.status)
+      ) {
+        return res.status(400).json({
+          error: "New work orders must be drafts or open.",
+        });
+      }
+
+      const fields = parseWorkOrderFields(req.body, isDraft);
+
+      const workOrder = await WorkOrder.create({
+        ...fields,
+        status: isDraft ? "draft" : "open",
+        businessId: req.userId,
+      });
+
+      return res.status(201).json(workOrder);
+    } catch (error) {
+      return res.status(400).json({
+        error: error.message || "Unable to save work order.",
+      });
+    }
+  }
+);
 
 app.get('/api/work-orders/:id', async (req, res) => {
   try {
@@ -126,8 +257,10 @@ app.get('/api/work-orders/:id', async (req, res) => {
     const workOrder = await WorkOrder.findById(req.params.id)
     .populate ("businessId", "businessProfile email") 
     .populate ("assignedStudentId", "studentProfile email");
-    if (!workOrder) {
-      return res.status(404).json({ error: "Work order was not found."});
+    if (!workOrder || workOrder.status === "draft") {
+      return res.status(404).json({
+        error: "Work order was not found.",
+      });
     }
     res.json(workOrder);
   } catch (error) {
@@ -232,7 +365,7 @@ app.get('/api/users/:id', async (req, res) => {
         })
           .populate({
             path: "workOrderId",
-            select: "title description category budget status businessId assignedStudentId",
+            select: "title description category budget status businessId assignedStudentId submissionInstructions allowEmptySubmission",
             populate: {
               path: "businessId",
               select: "businessProfile.companyName",
@@ -413,6 +546,196 @@ app.get('/api/users/:id', async (req, res) => {
         });
       }
     },
+  );
+
+  // Completion is only possible through approving a submission.
+  app.patch("/api/business/work-orders/:id/complete", requireUser, requireRole("business"), (_req, res) => {
+    return res.status(409).json({ error: "Review and approve the student's latest submission to complete this work order." });
+  });
+
+  // Edit a draft, open, or in-progress work order.
+  app.patch(
+    "/api/business/work-orders/:id",
+    requireUser,
+    requireRole("business"),
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+          return res.status(400).json({
+            error: "Invalid work order ID.",
+          });
+        }
+
+        const order = await WorkOrder.findOne({
+          _id: id,
+          businessId: req.userId,
+        });
+
+        if (!order) {
+          return res.status(404).json({
+            error: "Work order not found.",
+          });
+        }
+
+        if (["completed", "closed"].includes(order.status)) {
+          return res.status(409).json({
+            error: "Completed or closed work orders cannot be edited.",
+          });
+        }
+
+        // Editing never changes status or student assignment.
+        const fields = parseWorkOrderFields(
+          req.body,
+          order.status === "draft"
+        );
+
+        Object.assign(order, fields);
+        await order.save();
+
+        return res.json(order);
+      } catch (error) {
+        return res.status(400).json({
+          error: error.message || "Unable to update work order.",
+        });
+      }
+    }
+  );
+
+  // Publish an existing draft.
+  app.patch(
+    "/api/business/work-orders/:id/publish",
+    requireUser,
+    requireRole("business"),
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+          return res.status(400).json({
+            error: "Invalid work order ID.",
+          });
+        }
+
+        const order = await WorkOrder.findOne({
+          _id: id,
+          businessId: req.userId,
+        });
+
+        if (!order) {
+          return res.status(404).json({
+            error: "Work order not found.",
+          });
+        }
+
+        if (order.status !== "draft") {
+          return res.status(409).json({
+            error: "Only drafts can be published.",
+          });
+        }
+
+        parseWorkOrderFields(order.toObject(), false);
+
+        const published = await WorkOrder.findOneAndUpdate(
+          {
+            _id: id,
+            businessId: req.userId,
+            status: "draft",
+          },
+          { $set: { status: "open" } },
+          { new: true, runValidators: true }
+        );
+
+        if (!published) {
+          return res.status(409).json({
+            error: "This draft has already been published or changed.",
+          });
+        }
+
+        return res.json(published);
+      } catch (error) {
+        return res.status(400).json({
+          error: error.message || "Unable to publish draft.",
+        });
+      }
+    }
+  );
+
+  // Business deletes its own draft or open work order.
+  // Open orders with applications cannot be deleted.
+  app.delete(
+    "/api/business/work-orders/:id",
+    requireUser,
+    requireRole("business"),
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+          return res.status(400).json({
+            error: "Invalid work order ID.",
+          });
+        }
+
+        const workOrder = await WorkOrder.findOne({
+          _id: id,
+          businessId: req.userId,
+        });
+
+        if (!workOrder) {
+          return res.status(404).json({
+            error: "Work order not found.",
+          });
+        }
+
+        if (!["draft", "open"].includes(workOrder.status)) {
+          return res.status(409).json({
+            error: "Only draft and open work orders can be deleted.",
+          });
+        }
+
+        const applicationCount = await Application.countDocuments({
+          workOrderId: id,
+        });
+
+        if (applicationCount > 0) {
+          return res.status(409).json({
+            error:
+              "This work order has applications and cannot be deleted.",
+          });
+        }
+
+        if (workOrder.assignedStudentId) {
+          return res.status(409).json({
+            error: "Assigned work orders cannot be deleted.",
+          });
+        }
+
+        const deleted = await WorkOrder.findOneAndDelete({
+          _id: id,
+          businessId: req.userId,
+          status: { $in: ["draft", "open"] },
+          assignedStudentId: null,
+        });
+
+        if (!deleted) {
+          return res.status(409).json({
+            error: "Work order can no longer be deleted.",
+          });
+        }
+
+        return res.json({
+          message: "Work order deleted successfully.",
+        });
+      } catch (error) {
+        console.error("Delete work order error:", error);
+
+        return res.status(500).json({
+          error: "Unable to delete work order.",
+        });
+      }
+    }
   );
   
   // Return all work orders belonging to the logged-in business.
@@ -630,6 +953,143 @@ app.get('/api/users/:id', async (req, res) => {
       }
     },
   );
+
+  // The assigned student and owning business can view submission history.
+  app.get("/api/work-orders/:id/submissions", requireUser, async (req, res) => {
+    try {
+      if (!validId(req.params.id)) return res.status(400).json({ error: "Invalid work order ID." });
+      const order = await WorkOrder.findById(req.params.id);
+      if (!order) return res.status(404).json({ error: "Work order not found." });
+      const isBusiness = req.user.role === "business" && String(order.businessId) === req.userId;
+      const isStudent = req.user.role === "student" && String(order.assignedStudentId) === req.userId;
+      if (!isBusiness && !isStudent) return res.status(403).json({ error: "Not authorized to view submissions." });
+      const history = await WorkSubmission.find({ workOrderId: order._id }).sort({ submissionNumber: -1 });
+      return res.json(history);
+    } catch (err) {
+      console.error("Submission history error:", err);
+      return res.status(500).json({ error: "Unable to load submissions." });
+    }
+  });
+
+  // Multipart/form-data: notes, projectUrl, and repeated files fields.
+  app.post("/api/work-orders/:id/submissions", requireUser, requireRole("student"), receiveFiles, async (req, res) => {
+    let saved = false;
+    try {
+      if (!validId(req.params.id)) return res.status(400).json({ error: "Invalid work order ID." });
+      const order = await WorkOrder.findById(req.params.id);
+      if (!order) return res.status(404).json({ error: "Work order not found." });
+      if (order.status !== "in_progress" || String(order.assignedStudentId) !== req.userId) {
+        return res.status(403).json({ error: "Only the assigned student can submit to an in-progress work order." });
+      }
+      const notes = typeof req.body.notes === "string" ? req.body.notes.trim() : "";
+      const projectUrl = typeof req.body.projectUrl === "string" ? req.body.projectUrl.trim() : "";
+      if (notes.length > 10000 || projectUrl.length > 2048 || !validProjectUrl(projectUrl)) {
+        return res.status(400).json({ error: "Invalid notes or project URL." });
+      }
+      const hasNotes = Boolean(String(notes || "").trim());
+      const hasProjectUrl = Boolean(String(projectUrl || "").trim());
+      const hasFiles = (req.files?.length || 0) > 0;
+
+      if (
+        !order.allowEmptySubmission &&
+        !hasNotes &&
+        !hasProjectUrl &&
+        !hasFiles
+      ) {
+        return res.status(400).json({
+          error:
+            "This work order requires notes, a project link, or an attachment.",
+        });
+      }
+      const latest = await WorkSubmission.findOne({ workOrderId: order._id }).sort({ submissionNumber: -1 });
+      if (latest && latest.status !== "changes_requested") {
+        return res.status(409).json({ error: "Wait for feedback before resubmitting." });
+      }
+      const submission = await WorkSubmission.create({
+        workOrderId: order._id,
+        studentId: req.userId,
+        submissionNumber: latest ? latest.submissionNumber + 1 : 1,
+        notes, projectUrl,
+        attachments: (req.files || []).map((file) => ({
+          originalName: path.basename(file.originalname),
+          storageName: file.filename,
+          mimeType: file.mimetype,
+          size: file.size,
+        })),
+      });
+      saved = true;
+      return res.status(201).json(submission);
+    } catch (err) {
+      if (err.code === 11000) return res.status(409).json({ error: "A submission was already created. Refresh and try again." });
+      console.error("Submission create error:", err);
+      return res.status(500).json({ error: "Unable to submit work." });
+    } finally {
+      if (!saved) await cleanupUploads(req.files);
+    }
+  });
+
+  app.patch("/api/submissions/:id/review", requireUser, requireRole("business"), async (req, res) => {
+    try {
+      if (!validId(req.params.id)) return res.status(400).json({ error: "Invalid submission ID." });
+      const { status } = req.body;
+      const feedback = typeof req.body.feedback === "string" ? req.body.feedback.trim() : "";
+      if (!["approved", "changes_requested"].includes(status)) return res.status(400).json({ error: "Invalid review status." });
+      if (status === "changes_requested" && !feedback) return res.status(400).json({ error: "Feedback is required when requesting changes." });
+      if (feedback.length > 10000) return res.status(400).json({ error: "Feedback is too long." });
+      const submission = await WorkSubmission.findById(req.params.id);
+      if (!submission) return res.status(404).json({ error: "Submission not found." });
+      const order = await WorkOrder.findOne({ _id: submission.workOrderId, businessId: req.userId, status: "in_progress" });
+      if (!order) return res.status(403).json({ error: "This work order is not available for review." });
+      const latest = await WorkSubmission.findOne({ workOrderId: order._id }).sort({ submissionNumber: -1 });
+      if (!latest || String(latest._id) !== String(submission._id) || submission.status !== "pending_review") {
+        return res.status(409).json({ error: "Only the latest pending submission can be reviewed." });
+      }
+      const updated = await WorkSubmission.findOneAndUpdate(
+        { _id: submission._id, status: "pending_review" },
+        { $set: { status, feedback, reviewedAt: new Date() } },
+        { new: true }
+      );
+      if (!updated) return res.status(409).json({ error: "This submission has already been reviewed." });
+      if (status === "approved") {
+        const completed = await WorkOrder.findOneAndUpdate(
+          { _id: order._id, businessId: req.userId, status: "in_progress", assignedStudentId: submission.studentId },
+          { $set: { status: "completed" } },
+          { new: true }
+        );
+        if (!completed) return res.status(409).json({ error: "Submission approved, but the work order could not be completed. Contact an administrator." });
+        return res.json({ submission: updated, workOrder: completed });
+      }
+      return res.json({ submission: updated });
+    } catch (err) {
+      console.error("Submission review error:", err);
+      return res.status(500).json({ error: "Unable to review submission." });
+    }
+  });
+
+  // Download only after checking membership of the owning business or assigned student.
+  app.get("/api/submissions/:submissionId/attachments/:attachmentId", requireUser, async (req, res) => {
+    try {
+      const { submissionId, attachmentId } = req.params;
+      if (!validId(submissionId) || !validId(attachmentId)) return res.status(400).json({ error: "Invalid attachment ID." });
+      const submission = await WorkSubmission.findById(submissionId);
+      if (!submission) return res.status(404).json({ error: "Submission not found." });
+      const order = await WorkOrder.findById(submission.workOrderId);
+      if (!order) return res.status(404).json({ error: "Work order not found." });
+      const allowed = (req.user.role === "business" && String(order.businessId) === req.userId) ||
+        (req.user.role === "student" && String(order.assignedStudentId) === req.userId);
+      if (!allowed) return res.status(403).json({ error: "Not authorized to download this file." });
+      const attachment = submission.attachments.id(attachmentId);
+      if (!attachment) return res.status(404).json({ error: "Attachment not found." });
+      const filePath = path.join(uploadDirectory, attachment.storageName);
+      if (!/^[a-f0-9]{40}$/.test(attachment.storageName)) return res.status(400).json({ error: "Invalid stored filename." });
+      return res.download(filePath, attachment.originalName, (err) => {
+        if (err && !res.headersSent) res.status(404).json({ error: "File not found on server." });
+      });
+    } catch (err) {
+      console.error("Attachment download error:", err);
+      return res.status(500).json({ error: "Unable to download attachment." });
+    }
+  });
 
   return app;
 }

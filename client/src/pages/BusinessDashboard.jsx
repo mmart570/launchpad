@@ -1,7 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/BusinessDashboard.css";
+import ProfileDropdown from "../components/ProfileDropdown";
 
 const API_URL = "http://localhost:3000";
 
@@ -45,6 +45,10 @@ function formatStatus(status) {
     return "Completed";
   }
 
+  if (status === "draft") {
+    return "Draft";
+  }
+
   return "Open";
 }
 
@@ -55,6 +59,10 @@ function getStatusClass(status) {
 
   if (status === "completed") {
     return "status-completed";
+  }
+
+  if (status === "draft") {
+    return "status-draft";
   }
 
   return "status-open";
@@ -90,6 +98,8 @@ function getStudentInitials(student) {
 
 function BusinessDashboard() {
   const [workOrders, setWorkOrders] = useState([]);
+  const [activeTab, setActiveTab] = useState("open");
+  const [deletingOrderId, setDeletingOrderId] = useState(null);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   const [applicantsByOrder, setApplicantsByOrder] = useState({});
@@ -120,21 +130,17 @@ function BusinessDashboard() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `${API_URL}/api/business/work-orders`,
-          {
-            headers: {
-              Authorization: `Bearer ${businessToken}`,
-            },
+        const response = await fetch(`${API_URL}/api/business/work-orders`, {
+          headers: {
+            Authorization: `Bearer ${businessToken}`,
           },
-        );
+        });
 
         const result = await response.json().catch(() => null);
 
         if (!response.ok) {
           throw new Error(
-            result?.error ||
-              `Unable to load work orders (${response.status}).`,
+            result?.error || `Unable to load work orders (${response.status}).`,
           );
         }
 
@@ -143,15 +149,18 @@ function BusinessDashboard() {
         }
 
         const businessOrders = result.filter(
-          (order) =>
-            String(getBusinessId(order)) === String(businessUserId),
+          (order) => String(getBusinessId(order)) === String(businessUserId),
         );
 
         if (cancelled) return;
 
         setWorkOrders(businessOrders);
 
-        const firstOrderId = businessOrders[0]?._id || null;
+        const firstOrderId =
+          businessOrders.find(
+            (order) =>
+              order.status === "open" || order.status === "in_progress",
+          )?._id || null;
         setSelectedOrderId(firstOrderId);
 
         // Load application counts for every business work order.
@@ -224,6 +233,35 @@ function BusinessDashboard() {
     };
   }, [businessUserId, businessToken]);
 
+  const tabCounts = {
+    open: workOrders.filter((order) =>
+      ["open", "in_progress", "in-progress"].includes(order.status),
+    ).length,
+    draft: workOrders.filter((order) => order.status === "draft").length,
+    completed: workOrders.filter((order) =>
+      ["completed", "closed"].includes(order.status),
+    ).length,
+  };
+
+  const filteredOrders = workOrders.filter((order) => {
+    if (activeTab === "open")
+      return ["open", "in_progress", "in-progress"].includes(order.status);
+    if (activeTab === "draft") return order.status === "draft";
+    return ["completed", "closed"].includes(order.status);
+  });
+
+  function changeTab(tab) {
+    setActiveTab(tab);
+    const first = workOrders.find((order) => {
+      if (tab === "open")
+        return ["open", "in_progress", "in-progress"].includes(order.status);
+      if (tab === "draft") return order.status === "draft";
+      return ["completed", "closed"].includes(order.status);
+    });
+    setSelectedOrderId(first && tab !== "draft" ? first._id : null);
+    setNotice("");
+  }
+
   const selectedOrder = workOrders.find(
     (order) => order._id === selectedOrderId,
   );
@@ -241,9 +279,7 @@ function BusinessDashboard() {
   ).length;
 
   const inProgressCount = workOrders.filter(
-    (order) =>
-      order.status === "in_progress" ||
-      order.status === "in-progress",
+    (order) => order.status === "in_progress" || order.status === "in-progress",
   ).length;
 
   const completedCount = workOrders.filter(
@@ -260,8 +296,7 @@ function BusinessDashboard() {
     { label: "Open work orders", value: openCount },
     {
       label: "New applicants",
-      value:
-        Object.keys(applicantErrors).length > 0 ? "—" : pendingCount,
+      value: Object.keys(applicantErrors).length > 0 ? "—" : pendingCount,
     },
     { label: "In progress", value: inProgressCount },
     { label: "Completed", value: completedCount },
@@ -271,7 +306,67 @@ function BusinessDashboard() {
     setSelectedOrderId(orderId);
     setNotice("");
   }
-  
+
+  async function handleDeleteWorkOrder(order) {
+    if (!["draft", "open"].includes(order.status)) return;
+
+    const applicantCount = applicantsByOrder[order._id]?.length;
+    if (
+      order.status === "open" &&
+      (applicantErrors[order._id] || applicantCount === undefined)
+    ) {
+      setNotice(
+        "Cannot verify applications for this work order. Please try again later.",
+      );
+      return;
+    }
+    if (order.status === "open" && applicantCount > 0) {
+      setNotice("This work order has applications and cannot be deleted.");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        `Permanently delete "${order.title || "Untitled draft"}"? This cannot be undone.`,
+      )
+    )
+      return;
+    const session = getBusinessSession();
+    if (!session) {
+      setNotice("Please log in with a business account.");
+      return;
+    }
+
+    setDeletingOrderId(order._id);
+    setNotice("");
+    try {
+      const response = await fetch(
+        `${API_URL}/api/business/work-orders/${order._id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${session.token}` },
+        },
+      );
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok)
+        throw new Error(result.error || "Unable to delete work order.");
+      setWorkOrders((orders) =>
+        orders.filter((item) => item._id !== order._id),
+      );
+      setApplicantsByOrder((previous) => {
+        const next = { ...previous };
+        delete next[order._id];
+        return next;
+      });
+      setSelectedOrderId((current) => (current === order._id ? null : current));
+      setNotice("Work order deleted successfully.");
+    } catch (error) {
+      setNotice(error.message || "Unable to delete work order.");
+    } finally {
+      setDeletingOrderId(null);
+    }
+  }
+
   async function handleApplicationDecision(applicationId, status) {
     const session = getBusinessSession();
 
@@ -298,9 +393,7 @@ function BusinessDashboard() {
       const result = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(
-          result?.error || "Unable to update application.",
-        );
+        throw new Error(result?.error || "Unable to update application.");
       }
 
       // Reload so work order statuses and applicant counts
@@ -312,15 +405,11 @@ function BusinessDashboard() {
     }
   }
 
-
   return (
     <div className="business-dashboard-page">
       {/* Business navigation */}
       <header className="business-dashboard-navbar">
-        <Link
-          to="/business-dashboard"
-          className="business-dashboard-logo"
-        >
+        <Link to="/business-dashboard" className="business-dashboard-logo">
           Launch<span>Pad</span>
           <small> for Business</small>
         </Link>
@@ -329,23 +418,17 @@ function BusinessDashboard() {
           className="business-dashboard-nav"
           aria-label="Business navigation"
         >
-          <Link
-            to="/business-dashboard"
-            className="active"
-            aria-current="page"
-          >
+          <Link to="/business-dashboard" className="active" aria-current="page">
             Dashboard
           </Link>
 
-          <Link to="/businesses">Post a work order</Link>
+          <Link to="/businesses">Post a Work Order</Link>
 
-          <Link
-            to="/business-dashboard"
-            className="business-dashboard-nav-avatar"
-            aria-label="Business dashboard"
-          >
-            BU
-          </Link>
+          <ProfileDropdown
+            role="business"
+            initials="BU"
+            avatarClassName="business-dashboard-nav-avatar"
+          />
         </nav>
       </header>
 
@@ -353,24 +436,24 @@ function BusinessDashboard() {
         {/* Heading and post action */}
         <div className="business-dashboard-heading">
           <div>
-            <h1>Business dashboard</h1>
+            <h1>Business Dashboard</h1>
             <p>Manage your work orders and review applicants.</p>
           </div>
 
-          <Link
-            to="/businesses"
-            className="business-dashboard-post"
-          >
+          <Link to="/businesses" className="business-dashboard-post">
             Post work order
           </Link>
+
+          {notice && (
+            <p className="business-dashboard-notice" role="status">
+              {notice}
+            </p>
+          )}
         </div>
 
         {error && (
           <p className="business-dashboard-notice" role="alert">
-            {error}{" "}
-            {!businessUserId && (
-              <Link to="/business-auth">Log in</Link>
-            )}
+            {error} {!businessUserId && <Link to="/business-auth">Log in</Link>}
           </p>
         )}
 
@@ -380,10 +463,7 @@ function BusinessDashboard() {
           aria-label="Business statistics"
         >
           {statistics.map((stat) => (
-            <div
-              className="business-dashboard-stat-card"
-              key={stat.label}
-            >
+            <div className="business-dashboard-stat-card" key={stat.label}>
               <span>{stat.label}</span>
               <strong>{loading ? "..." : stat.value}</strong>
             </div>
@@ -395,7 +475,30 @@ function BusinessDashboard() {
           <section className="business-dashboard-panel">
             <h2>Your work orders</h2>
 
-            <div className="business-dashboard-list">
+            <div
+              className="business-dashboard-tabs"
+              role="tablist"
+              aria-label="Work order status"
+            >
+              {[
+                { id: "open", label: "Open" },
+                { id: "draft", label: "Drafts" },
+                { id: "completed", label: "Completed" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  className={`business-dashboard-tab ${activeTab === tab.id ? "active" : ""}`}
+                  onClick={() => changeTab(tab.id)}
+                >
+                  {tab.label} <span>{tabCounts[tab.id]}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="business-dashboard-list" role="tabpanel">
               {loading && (
                 <p className="business-dashboard-empty">
                   Loading your work orders and applicants...
@@ -405,14 +508,26 @@ function BusinessDashboard() {
               {!loading && !error && workOrders.length === 0 && (
                 <p className="business-dashboard-empty">
                   You haven't posted any work orders yet.{" "}
-                  <Link to="/businesses">
-                    Post your first work order
-                  </Link>
+                  <Link to="/businesses">Post your first work order</Link>
                 </p>
               )}
 
               {!loading &&
-                workOrders.map((order) => {
+                !error &&
+                workOrders.length > 0 &&
+                filteredOrders.length === 0 && (
+                  <p className="business-dashboard-empty">
+                    {activeTab === "draft"
+                      ? "No saved drafts yet."
+                      : activeTab === "completed"
+                        ? "No completed work orders yet."
+                        : "No open or in-progress work orders."}
+                  </p>
+                )}
+
+              {!loading &&
+                !error &&
+                filteredOrders.map((order) => {
                   const applicants = applicantsByOrder[order._id];
                   const applicantError = applicantErrors[order._id];
 
@@ -431,15 +546,17 @@ function BusinessDashboard() {
                   return (
                     <article
                       className={`business-dashboard-order ${
-                        selectedOrderId === order._id
-                          ? "selected"
-                          : ""
+                        selectedOrderId === order._id ? "selected" : ""
                       }`}
                       key={order._id}
                     >
                       <div className="business-dashboard-order-info">
-                        <h3>{order.title}</h3>
-                        <p>{applicantText}</p>
+                        <h3>{order.title || "Untitled draft"}</h3>
+                        <p>
+                          {order.status === "draft"
+                            ? "Not published"
+                            : applicantText}
+                        </p>
                       </div>
 
                       <span
@@ -450,18 +567,64 @@ function BusinessDashboard() {
                         {formatStatus(order.status)}
                       </span>
 
-                      <button
-                        type="button"
-                        className="business-dashboard-outline"
-                        onClick={() =>
-                          handleReviewApplicants(order._id)
-                        }
-                        aria-pressed={
-                          selectedOrderId === order._id
-                        }
-                      >
-                        Review applicants
-                      </button>
+                      {order.status !== "draft" && (
+                        <button
+                          type="button"
+                          className="business-dashboard-outline"
+                          onClick={() => handleReviewApplicants(order._id)}
+                          aria-pressed={selectedOrderId === order._id}
+                        >
+                          Review applicants
+                        </button>
+                      )}
+                      {!["completed", "closed"].includes(order.status) && (
+                        <Link
+                          to={`/businesses/edit/${order._id}`}
+                          className="business-dashboard-outline"
+                        >
+                          Edit
+                        </Link>
+                      )}
+                      {order.status === "draft" && (
+                        <Link
+                          to={`/businesses/edit/${order._id}`}
+                          className="business-dashboard-accept"
+                        >
+                          Publish
+                        </Link>
+                      )}
+                      {["draft", "open"].includes(order.status) && (
+                        <button
+                          type="button"
+                          className="business-dashboard-delete"
+                          onClick={() => handleDeleteWorkOrder(order)}
+                          disabled={
+                            deletingOrderId === order._id ||
+                            (order.status === "open" &&
+                              (applicantErrors[order._id] ||
+                                !Array.isArray(applicantsByOrder[order._id]) ||
+                                applicantsByOrder[order._id].length > 0))
+                          }
+                          title={
+                            order.status === "open" &&
+                            applicantsByOrder[order._id]?.length > 0
+                              ? "Cannot delete a work order with applications"
+                              : "Delete work order"
+                          }
+                        >
+                          {deletingOrderId === order._id
+                            ? "Deleting..."
+                            : "Delete"}
+                        </button>
+                      )}
+                      {order.status === "in_progress" && (
+                        <Link
+                          to={`/business/work-orders/${order._id}/submissions`}
+                          className="business-dashboard-accept"
+                        >
+                          Review submissions
+                        </Link>
+                      )}
                     </article>
                   );
                 })}
@@ -472,9 +635,7 @@ function BusinessDashboard() {
           <section className="business-dashboard-panel">
             <h2>
               Applicants:{" "}
-              {selectedOrder
-                ? selectedOrder.title
-                : "Select a work order"}
+              {selectedOrder ? selectedOrder.title : "Select a work order"}
             </h2>
 
             <div className="business-dashboard-list">
@@ -485,10 +646,7 @@ function BusinessDashboard() {
               )}
 
               {!loading && selectedApplicantError && (
-                <p
-                  className="business-dashboard-empty"
-                  role="alert"
-                >
+                <p className="business-dashboard-empty" role="alert">
                   {selectedApplicantError}
                 </p>
               )}
@@ -504,7 +662,9 @@ function BusinessDashboard() {
 
               {!loading && !selectedOrder && (
                 <p className="business-dashboard-empty">
-                  Select a work order to review applicants.
+                  {activeTab === "draft"
+                    ? "Drafts are not visible to students and have no applicants."
+                    : "Select a work order to review applicants."}
                 </p>
               )}
 
@@ -514,17 +674,14 @@ function BusinessDashboard() {
                   const student = application.studentId;
 
                   const studentName = getStudentName(student);
-                  const studentInitials =
-                    getStudentInitials(student);
+                  const studentInitials = getStudentInitials(student);
 
                   const major =
-                    student?.studentProfile?.major ||
-                    "Major not specified";
+                    student?.studentProfile?.major || "Major not specified";
 
-                  const applicationStatus =
-                    formatApplicationStatus(
-                      application.status,
-                    );
+                  const applicationStatus = formatApplicationStatus(
+                    application.status,
+                  );
 
                   return (
                     <article
@@ -610,15 +767,6 @@ function BusinessDashboard() {
                   );
                 })}
             </div>
-
-            {notice && (
-              <p
-                className="business-dashboard-notice"
-                role="status"
-              >
-                {notice}
-              </p>
-            )}
           </section>
         </div>
       </main>
