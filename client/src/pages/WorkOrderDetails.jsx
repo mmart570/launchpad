@@ -19,7 +19,7 @@
 */
 
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import "../styles/WorkOrderDetails.css";
 import BusinessInformation from "../components/BusinessInformation";
 import NotificationBell from "../components/NotificationBell";
@@ -57,12 +57,16 @@ function WorkOrderDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [activeTab, setActiveTab] = useState("details");
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("tab") === "messages" ? "messages" : "details",
+  );
   const [notice, setNotice] = useState("");
   const [showBusinessInfo, setShowBusinessInfo] = useState(false);
   const [myApplication, setMyApplication] = useState(null);
   const [checkingApplication, setCheckingApplication] = useState(true);
   const [applicationError, setApplicationError] = useState("");
+  // The authenticated session is shared by messaging, reporting, and navigation.
   const [session, setSession] = useState(null);
   const [threads, setThreads] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState("");
@@ -78,90 +82,167 @@ function WorkOrderDetails() {
   const [reportNotice, setReportNotice] = useState("");
   const [reportError, setReportError] = useState("");
 
+  // Restore the active student/business session from browser storage.
   useEffect(() => {
     let found = null;
     for (const storage of [sessionStorage, localStorage]) {
       try {
         const user = JSON.parse(storage.getItem("launchpad_user") || "{}");
         const token = storage.getItem("launchpad_token");
-        if (token && ["student", "business"].includes(user.role)) { found = { token, role: user.role }; break; }
-      } catch { /* Invalid session */ }
+        if (token && ["student", "business"].includes(user.role)) {
+          found = { token, role: user.role };
+          break;
+        }
+      } catch {
+        /* Invalid session */
+      }
     }
     setSession(found);
   }, [id]);
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("tab") === "messages") setActiveTab("messages");
+    if (new URLSearchParams(window.location.search).get("tab") === "messages")
+      setActiveTab("messages");
   }, [id]);
 
+  // Businesses can choose which applicant conversation to view.
   useEffect(() => {
-    if (activeTab !== "messages" || !session || session.role !== "business") return;
+    if (activeTab !== "messages" || !session || session.role !== "business")
+      return;
     let cancelled = false;
-    fetch(`${API_URL}/api/work-orders/${id}/conversations`, { headers: { Authorization: `Bearer ${session.token}` } })
-      .then(async r => { const data = await r.json(); if (!r.ok) throw new Error(data.error || "Unable to load conversations."); return data; })
-      .then(data => { if (!cancelled) { setThreads(data); setSelectedStudent(current => data.some(t => t.studentId === current) ? current : (data[0]?.studentId || "")); } })
-      .catch(err => { if (!cancelled) setMessageError(err.message); });
-    return () => { cancelled = true; };
+    fetch(`${API_URL}/api/work-orders/${id}/conversations`, {
+      headers: { Authorization: `Bearer ${session.token}` },
+    })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok)
+          throw new Error(data.error || "Unable to load conversations.");
+        return data;
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setThreads(data);
+          setSelectedStudent((current) =>
+            data.some((t) => t.studentId === current)
+              ? current
+              : data[0]?.studentId || "",
+          );
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setMessageError(err.message);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab, id, session]);
 
+  // Load messages for the selected work order and student conversation.
   async function loadMessages() {
-    if (!session || (session.role === "student" && !myApplication)) return;
-    if (session.role === "business" && !selectedStudent) return;
+    if (!session || (session.role === "student" && !myApplication)) {
+      setMessages([]);
+      return;
+    }
+    if (session.role === "business" && !selectedStudent) {
+      setMessages([]);
+      return;
+    }
     setMessageLoading(true);
     setMessageError("");
     try {
-      const query = session.role === "business" ? `?studentId=${encodeURIComponent(selectedStudent)}` : "";
-      const response = await fetch(`${API_URL}/api/work-orders/${id}/messages${query}`, { headers: { Authorization: `Bearer ${session.token}` } });
+      const query =
+        session.role === "business"
+          ? `?studentId=${encodeURIComponent(selectedStudent)}`
+          : "";
+      const response = await fetch(
+        `${API_URL}/api/work-orders/${id}/messages${query}`,
+        { headers: { Authorization: `Bearer ${session.token}` } },
+      );
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Unable to load messages.");
+      if (!response.ok)
+        throw new Error(data.error || "Unable to load messages.");
       setMessages(data);
-    } catch (err) { setMessageError(err.message); }
-    finally { setMessageLoading(false); }
+    } catch (err) {
+      setMessageError(err.message);
+    } finally {
+      setMessageLoading(false);
+    }
   }
 
   useEffect(() => {
     if (activeTab === "messages") loadMessages();
   }, [activeTab, id, session, selectedStudent, myApplication]);
 
+  // Send a message using the work-order messaging API.
   async function sendMessage(event) {
     event.preventDefault();
     if (!messageText.trim() || messageBusy || !session) return;
+    if (session.role === "business" && !selectedStudent) return;
     setMessageBusy(true);
     setMessageError("");
     try {
-      const response = await fetch(`${API_URL}/api/work-orders/${id}/messages`, {
-        method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.token}` },
-        body: JSON.stringify({ body: messageText.trim(), ...(session.role === "business" ? { studentId: selectedStudent } : {}) })
-      });
+      const response = await fetch(
+        `${API_URL}/api/work-orders/${id}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.token}`,
+          },
+          body: JSON.stringify({
+            body: messageText.trim(),
+            ...(session.role === "business"
+              ? { studentId: selectedStudent }
+              : {}),
+          }),
+        },
+      );
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Unable to send message.");
+      if (!response.ok)
+        throw new Error(data.error || "Unable to send message.");
       setMessageText("");
       await loadMessages();
-    } catch (err) { setMessageError(err.message); }
-    finally { setMessageBusy(false); }
+    } catch (err) {
+      setMessageError(err.message);
+    } finally {
+      setMessageBusy(false);
+    }
   }
 
+  // Students can privately report a problem with the work order.
   async function submitReport(event) {
     event.preventDefault();
-    if (!session || session.role !== "student") return setReportError("Sign in as a student to report a problem.");
+    if (!session || session.role !== "student")
+      return setReportError("Sign in as a student to report a problem.");
     setReportBusy(true);
     setReportError("");
     setReportNotice("");
     try {
       const response = await fetch(`${API_URL}/api/work-orders/${id}/reports`, {
-        method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.token}` },
-        body: JSON.stringify({ reason: reportReason, description: reportDescription.trim() })
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+        body: JSON.stringify({
+          reason: reportReason,
+          description: reportDescription.trim(),
+        }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Unable to submit report.");
+      if (!response.ok)
+        throw new Error(data.error || "Unable to submit report.");
       setReportNotice("Your report was submitted and saved with Open status.");
       setReportDescription("");
       setShowReport(false);
-    } catch (err) { setReportError(err.message); }
-    finally { setReportBusy(false); }
+    } catch (err) {
+      setReportError(err.message);
+    } finally {
+      setReportBusy(false);
+    }
   }
 
-
+  // Prevent duplicate applications and show the current application status.
   useEffect(() => {
     let cancelled = false;
     async function checkApplication() {
@@ -171,13 +252,21 @@ function WorkOrderDetails() {
       let token = null;
       for (const storage of [sessionStorage, localStorage]) {
         try {
-          if (JSON.parse(storage.getItem("launchpad_user") || "{}").role === "student") {
+          if (
+            JSON.parse(storage.getItem("launchpad_user") || "{}").role ===
+            "student"
+          ) {
             token = storage.getItem("launchpad_token");
             if (token) break;
           }
-        } catch { /* Invalid stored session. */ }
+        } catch {
+          /* Invalid stored session. */
+        }
       }
-      if (!token) { if (!cancelled) setCheckingApplication(false); return; }
+      if (!token) {
+        if (!cancelled) setCheckingApplication(false);
+        return;
+      }
       try {
         const response = await fetch(`${API_URL}/api/applications/my`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -186,9 +275,14 @@ function WorkOrderDetails() {
         if (!response.ok || !Array.isArray(data)) {
           throw new Error(data?.error || "Could not check application status.");
         }
-        if (!cancelled) setMyApplication(data.find((item) =>
-          String(item.workOrderId?._id || item.workOrderId) === String(id)
-        ) || null);
+        if (!cancelled)
+          setMyApplication(
+            data.find(
+              (item) =>
+                String(item.workOrderId?._id || item.workOrderId) ===
+                String(id),
+            ) || null,
+          );
       } catch (err) {
         if (!cancelled) setApplicationError(err.message);
       } finally {
@@ -196,10 +290,12 @@ function WorkOrderDetails() {
       }
     }
     checkApplication();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-
+  // Fetch the work order and cancel the request when navigating away.
   useEffect(() => {
     const controller = new AbortController();
 
@@ -255,7 +351,7 @@ function WorkOrderDetails() {
 
   function handleReport() {
     setReportError("");
-    setShowReport(current => !current);
+    setShowReport((current) => !current);
   }
 
   const businessName =
@@ -276,7 +372,14 @@ function WorkOrderDetails() {
 
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {session && <NotificationBell role={session.role} />}
-          <Link to={session?.role === "business" ? "/business-dashboard" : "/dashboard"} className="work-details-back">
+          <Link
+            to={
+              session?.role === "business"
+                ? "/business-dashboard"
+                : "/dashboard"
+            }
+            className="work-details-back"
+          >
             Back to dashboard
           </Link>
         </div>
@@ -320,28 +423,45 @@ function WorkOrderDetails() {
 
           <main className="work-details-main">
             <div className="work-details-actions">
-              {checkingApplication ? (
-                <span className="work-apply-button" aria-live="polite">Checking application...</span>
+              {session?.role === "business" ? null : checkingApplication ? (
+                <span className="work-apply-button" aria-live="polite">
+                  Checking application...
+                </span>
               ) : applicationError ? (
                 <span role="alert">{applicationError}</span>
               ) : myApplication ? (
                 <>
-                  <span className="work-apply-button" role="status" aria-disabled="true">
-                    {myApplication.status === "accepted" ? "Application accepted" :
-                     myApplication.status === "rejected" ? "Application declined" : "Application submitted"}
+                  <span
+                    className="work-apply-button"
+                    role="status"
+                    aria-disabled="true"
+                  >
+                    {myApplication.status === "accepted"
+                      ? "Application accepted"
+                      : myApplication.status === "rejected"
+                        ? "Application declined"
+                        : "Application submitted"}
                   </span>
                   {myApplication.status === "pending" && (
-                    <Link to={`/work-orders/${id}/apply`} className="work-action-outline">
+                    <Link
+                      to={`/work-orders/${id}/apply`}
+                      className="work-action-outline"
+                    >
                       Edit application
                     </Link>
                   )}
                 </>
               ) : workOrder.status === "open" ? (
-                <Link to={`/work-orders/${id}/apply`} className="work-apply-button">
+                <Link
+                  to={`/work-orders/${id}/apply`}
+                  className="work-apply-button"
+                >
                   Apply for this work order
                 </Link>
               ) : (
-                <span className="work-apply-button" aria-disabled="true">Applications closed</span>
+                <span className="work-apply-button" aria-disabled="true">
+                  Applications closed
+                </span>
               )}
 
               <button
@@ -349,36 +469,72 @@ function WorkOrderDetails() {
                 className="work-action-outline"
                 onClick={handleMessage}
               >
-                Message business
+                {session?.role === "business"
+                  ? "Message student"
+                  : "Message business"}
               </button>
 
-              {session?.role !== "business" && <button
-                type="button"
-                className="work-action-outline"
-                onClick={handleReport}
-              >
-                Report problem
-              </button>}
+              {session?.role !== "business" && (
+                <button
+                  type="button"
+                  className="work-action-outline"
+                  onClick={handleReport}
+                >
+                  Report problem
+                </button>
+              )}
             </div>
 
-            {reportNotice && <p className="work-details-notice" role="status">{reportNotice}</p>}
+            {reportNotice && (
+              <p className="work-details-notice" role="status">
+                {reportNotice}
+              </p>
+            )}
             {showReport && (
               <section className="work-info-card work-messages-panel">
                 <h2>Report a problem</h2>
-                <form className="work-info-body" onSubmit={submitReport} style={{ display: "grid", gap: 12 }}>
+                <form
+                  className="work-info-body"
+                  onSubmit={submitReport}
+                  style={{ display: "grid", gap: 12 }}
+                >
                   <label htmlFor="report-reason">Reason</label>
-                  <select id="report-reason" value={reportReason} onChange={e => setReportReason(e.target.value)}>
+                  <select
+                    id="report-reason"
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                  >
                     <option value="communication">Communication</option>
                     <option value="payment">Payment</option>
                     <option value="scope">Work scope</option>
                     <option value="conduct">Conduct</option>
                     <option value="other">Other</option>
                   </select>
-                  <label htmlFor="report-description">Describe the problem</label>
-                  <textarea id="report-description" rows={5} minLength={10} maxLength={5000} required value={reportDescription} onChange={e => setReportDescription(e.target.value)} placeholder="Explain what happened (at least 10 characters)..." />
+                  <label htmlFor="report-description">
+                    Describe the problem
+                  </label>
+                  <textarea
+                    id="report-description"
+                    rows={5}
+                    minLength={10}
+                    maxLength={5000}
+                    required
+                    value={reportDescription}
+                    onChange={(e) => setReportDescription(e.target.value)}
+                    placeholder="Explain what happened (at least 10 characters)..."
+                  />
                   {reportError && <p role="alert">{reportError}</p>}
-                  <button className="work-apply-button" type="submit" disabled={reportBusy || session?.role !== "student"}>{reportBusy ? "Submitting..." : "Submit report"}</button>
-                  <p>Reports are stored privately. A moderation review dashboard has not been implemented yet.</p>
+                  <button
+                    className="work-apply-button"
+                    type="submit"
+                    disabled={reportBusy || session?.role !== "student"}
+                  >
+                    {reportBusy ? "Submitting..." : "Submit report"}
+                  </button>
+                  <p>
+                    Reports are stored privately. A moderation review dashboard
+                    has not been implemented yet.
+                  </p>
                 </form>
               </section>
             )}
@@ -619,39 +775,114 @@ function WorkOrderDetails() {
             ) : (
               <section className="work-info-card work-messages-panel">
                 <h2>Messages</h2>
-
                 <div className="work-info-body">
-                  {!session ? <p>Sign in to use messages.</p> : session.role === "student" && !myApplication ? (
-                    <p>Apply to this work order before messaging the business.</p>
+                  {!session ? (
+                    <p>
+                      Sign in to use messages. <Link to="/login">Log in</Link>
+                    </p>
+                  ) : session.role === "student" && !myApplication ? (
+                    <p>
+                      Apply to this work order before messaging the business.
+                    </p>
                   ) : (
                     <div style={{ display: "grid", gap: 14 }}>
                       {session.role === "business" && (
                         <>
-                          <label htmlFor="conversation-student">Student conversation</label>
-                          <select id="conversation-student" value={selectedStudent} onChange={e => setSelectedStudent(e.target.value)}>
-                            {threads.length === 0 && <option value="">No applicants yet</option>}
-                            {threads.map(thread => <option key={thread.studentId} value={thread.studentId}>{thread.name} ({thread.applicationStatus})</option>)}
+                          <label htmlFor="conversation-student">
+                            Student conversation
+                          </label>
+                          <select
+                            id="conversation-student"
+                            value={selectedStudent}
+                            onChange={(event) =>
+                              setSelectedStudent(event.target.value)
+                            }
+                          >
+                            {threads.length === 0 && (
+                              <option value="">No applicants yet</option>
+                            )}
+                            {threads.map((thread) => (
+                              <option
+                                key={thread.studentId}
+                                value={thread.studentId}
+                              >
+                                {thread.name} ({thread.applicationStatus})
+                              </option>
+                            ))}
                           </select>
                         </>
                       )}
                       {messageError && <p role="alert">{messageError}</p>}
-                      <button type="button" className="work-action-outline" onClick={loadMessages} disabled={messageLoading}>Refresh messages</button>
-                      {messageLoading ? <p>Loading messages...</p> : messages.length === 0 ? <p>No messages yet.</p> : (
+                      <button
+                        type="button"
+                        className="work-action-outline"
+                        onClick={loadMessages}
+                        disabled={
+                          messageLoading ||
+                          (session.role === "business" && !selectedStudent)
+                        }
+                      >
+                        Refresh messages
+                      </button>
+                      {messageLoading ? (
+                        <p>Loading messages...</p>
+                      ) : messages.length === 0 ? (
+                        <p>No messages yet.</p>
+                      ) : (
                         <div style={{ display: "grid", gap: 12 }}>
-                          {messages.map(message => (
-                            <div key={message._id} style={{ padding: 12, border: "1px solid #ddd", borderRadius: 8 }}>
-                              <strong>{message.senderRole === "business" ? "Business" : "Student"}</strong>
-                              <small style={{ marginLeft: 10 }}>{new Date(message.createdAt).toLocaleString()}</small>
-                              <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{message.body}</p>
+                          {messages.map((message) => (
+                            <div
+                              key={message._id}
+                              style={{
+                                padding: 12,
+                                border: "1px solid #ddd",
+                                borderRadius: 8,
+                              }}
+                            >
+                              <strong>
+                                {message.senderRole === "business"
+                                  ? "Business"
+                                  : "Student"}
+                              </strong>
+                              <small style={{ marginLeft: 10 }}>
+                                {new Date(message.createdAt).toLocaleString()}
+                              </small>
+                              <p
+                                style={{
+                                  whiteSpace: "pre-wrap",
+                                  overflowWrap: "anywhere",
+                                }}
+                              >
+                                {message.body}
+                              </p>
                             </div>
                           ))}
                         </div>
                       )}
                       {(session.role === "student" || selectedStudent) && (
-                        <form onSubmit={sendMessage} style={{ display: "grid", gap: 10 }}>
+                        <form
+                          onSubmit={sendMessage}
+                          style={{ display: "grid", gap: 10 }}
+                        >
                           <label htmlFor="new-message">New message</label>
-                          <textarea id="new-message" rows={4} maxLength={5000} value={messageText} onChange={e => setMessageText(e.target.value)} placeholder="Write your message..." required />
-                          <button className="work-apply-button" type="submit" disabled={messageBusy || !messageText.trim()}>{messageBusy ? "Sending..." : "Send message"}</button>
+                          <textarea
+                            id="new-message"
+                            rows={4}
+                            maxLength={5000}
+                            value={messageText}
+                            onChange={(event) =>
+                              setMessageText(event.target.value)
+                            }
+                            placeholder="Write your message..."
+                            required
+                          />
+                          <button
+                            className="work-apply-button"
+                            type="submit"
+                            disabled={messageBusy || !messageText.trim()}
+                          >
+                            {messageBusy ? "Sending..." : "Send message"}
+                          </button>
                         </form>
                       )}
                     </div>

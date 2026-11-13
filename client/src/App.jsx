@@ -177,7 +177,8 @@ function RequireRole({ role, children }) {
 // Dynamic routing for work order display (different views for students vs businesses)
 function WorkOrderRoute() {
   const auth = useAuthenticatedRole();
-  if (auth.loading) return <p style={{ padding: 24 }}>Checking your session...</p>;
+  if (auth.loading)
+    return <p style={{ padding: 24 }}>Checking your session...</p>;
   if (!auth.role) return <Navigate to="/login" replace />;
   return auth.role === "business" ? <BusinessMessages /> : <WorkOrderDetails />;
 }
@@ -193,7 +194,7 @@ function App() {
         {/* =====================================================
             PUBLIC ROUTES (No authentication required)
             ===================================================== */}
-        
+
         {/* Landing page - first page users see */}
         <Route path="/" element={<LandingPage />} />
 
@@ -210,7 +211,7 @@ function App() {
         {/* =====================================================
             STUDENT-ONLY ROUTES (Require student role)
             ===================================================== */}
-        
+
         {/* Student dashboard - main hub for students */}
         <Route
           path="/dashboard"
@@ -242,12 +243,7 @@ function App() {
         />
 
         {/* View work order details and apply */}
-        <Route
-          path="/work-orders/:id"
-          element={
-            <WorkOrderRoute />
-          }
-        />
+        <Route path="/work-orders/:id" element={<WorkOrderRoute />} />
 
         {/* Apply to a specific work order */}
         <Route
@@ -260,19 +256,19 @@ function App() {
         />
 
         {/* Submit completed work to an accepted work order */}
-        <Route 
-          path="/student/work-orders/:id/submit" 
+        <Route
+          path="/student/work-orders/:id/submit"
           element={
             <RequireRole role="student">
               <StudentWorkSubmission />
             </RequireRole>
-          } 
+          }
         />
 
         {/* =====================================================
             BUSINESS-ONLY ROUTES (Require business role)
             ===================================================== */}
-        
+
         {/* Business dashboard - main hub for businesses */}
         <Route
           path="/business-dashboard"
@@ -294,23 +290,23 @@ function App() {
         />
 
         {/* Edit existing work order */}
-        <Route 
-          path="/businesses/edit/:id" 
+        <Route
+          path="/businesses/edit/:id"
           element={
             <RequireRole role="business">
               <BusinessPage />
             </RequireRole>
-          } 
+          }
         />
 
         {/* Work order creation success page */}
-        <Route 
-          path="/businesses/success" 
+        <Route
+          path="/businesses/success"
           element={
             <RequireRole role="business">
               <WorkOrderSuccess />
             </RequireRole>
-          } 
+          }
         />
 
         {/* View student public profile (businesses only) */}
