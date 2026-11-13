@@ -1,4 +1,16 @@
-/* Center the account flow on a full-height neutral background. */
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                          BusinessAuth.css                                  ║
+║                                                                            ║
+║  Styling for business account creation and login forms. Provides a         ║
+║  centered authentication card with form fields, tab controls, and          ║
+║  account action buttons. Responsive layout for all screen sizes.           ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND BASE STYLING
+   ────────────────────────────────────────────────────────────────────────── */
 .business-auth-page {
   min-height: 100vh;
   width: 100%;
@@ -162,4 +174,10 @@
   .business-auth-footer {
     margin: 18px 22px 24px;
   }
+}
+
+/* Business login form spacing */
+.business-auth-form button[type="submit"] {
+  margin-top: 20px;
+  margin-bottom: 20px;
 }

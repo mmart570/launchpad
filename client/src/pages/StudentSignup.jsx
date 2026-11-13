@@ -1,3 +1,23 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         StudentSignup.jsx                                  ║
+║                                                                            ║
+║  Student account creation/registration page. Two-column layout with        ║
+║  branded messaging on left and signup form on right. Collects name,        ║
+║  email, password (with visibility toggle), school, major, and              ║
+║  graduation year. Validates input and creates account with token.          ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Multi-field form with validation                                        ║
+║  - Password visibility toggle                                              ║
+║  - School and academic information fields                                  ║
+║  - Graduation year dropdown                                                ║
+║  - Error and success message display                                       ║
+║  - Account creation with role-based session management                     ║
+║  - Link to login page for existing accounts                                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/StudentSignup.css";

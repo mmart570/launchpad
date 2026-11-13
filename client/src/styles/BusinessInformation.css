@@ -1,4 +1,16 @@
-/* Cover the page with a dimmed layer and center the profile dialog. */
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                       BusinessInformation.css                              ║
+║                                                                            ║
+║  Styling for the business profile modal dialog. Displays business info     ║
+║  with avatar, company details, verification status, and action buttons     ║
+║  (message, back). Responsive modal overlay with fixed positioning.         ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MODAL OVERLAY AND DIALOG CONTAINER
+   ────────────────────────────────────────────────────────────────────────── */
 .business-info-overlay {
   position: fixed;
   inset: 0;

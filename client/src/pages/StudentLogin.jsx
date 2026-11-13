@@ -1,3 +1,22 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         StudentLogin.jsx                                   ║
+║                                                                            ║
+║  Student account login page with two-column layout. Left side displays     ║
+║  branded messaging, right side has login form. Includes remember-me        ║
+║  checkbox, password recovery link, and signup redirect.                    ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Email/password credential inputs                                        ║
+║  - Remember me checkbox for session persistence                            ║
+║  - Forgot password link to recovery flow                                   ║
+║  - Success message after successful signup                                 ║
+║  - Error message display for invalid credentials                           ║
+║  - Link to signup page for new accounts                                    ║
+║  - Two-column responsive layout                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/StudentLogin.css";

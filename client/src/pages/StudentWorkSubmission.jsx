@@ -1,3 +1,22 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                      StudentWorkSubmission.jsx                             ║
+║                                                                            ║
+║  Student work submission interface for uploading completed assignments     ║
+║  to work orders. Provides file upload with drag-and-drop, submission       ║
+║  history, and status tracking. Student can submit multiple times as        ║
+║  needed (e.g., for revisions after business feedback).                     ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - File upload with drag-and-drop support                                  ║
+║  - File list with download capabilities                                    ║
+║  - Submission history with timestamps                                      ║
+║  - Multiple submission attempts support                                    ║
+║  - Status tracking (submitted, under review, accepted, rejected)           ║
+║  - Business feedback display on submissions                                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ProfileDropdown from "../components/ProfileDropdown";
@@ -41,7 +60,7 @@ export default function StudentWorkSubmission() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  async function load() {
+  async function load({ preserveMessages = false } = {}) {
     const token = getToken();
     if (!token) {
       setError("Please sign in as a student.");
@@ -49,7 +68,7 @@ export default function StudentWorkSubmission() {
       return;
     }
     setLoading(true);
-    setError("");
+    if (!preserveMessages) setError("");
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const [ordersResponse, submissionsResponse] = await Promise.all([
@@ -114,6 +133,9 @@ export default function StudentWorkSubmission() {
 
   async function submit(event) {
     event.preventDefault();
+
+    if (busy || !canSubmit) return;
+
     const token = getToken();
     if (!token) return setError("Please sign in again.");
     const canSubmitEmpty = order?.allowEmptySubmission === true;
@@ -161,11 +183,37 @@ export default function StudentWorkSubmission() {
       setFiles([]);
       if (inputRef.current) inputRef.current.value = "";
       setNotice("Work submitted successfully. The business can now review it.");
-      await load();
+      await load({ preserveMessages: true });
     } catch (err) {
       setError(err.message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function downloadAttachment(submission, attachment) {
+    const token = getToken();
+    if (!token) return setError("Please sign in again.");
+    setError("");
+    try {
+      const response = await fetch(
+        `${API_URL}/api/submissions/${submission._id}/attachments/${attachment._id}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || "Could not download attachment.");
+      }
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = attachment.originalName || "attachment";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (err) {
+      setError(err.message || "Could not download attachment.");
     }
   }
 
@@ -345,6 +393,24 @@ export default function StudentWorkSubmission() {
                       {new Date(submission.createdAt).toLocaleString()} ·{" "}
                       {submission.attachments?.length || 0} file(s)
                     </p>
+                    {submission.notes && (
+                      <p className="ws-preserve">Notes: {submission.notes}</p>
+                    )}
+                    {submission.projectUrl && (
+                      <p className="ws-preserve">
+                        Project link: <a href={submission.projectUrl} target="_blank" rel="noopener noreferrer">{submission.projectUrl}</a>
+                      </p>
+                    )}
+                    {submission.attachments?.length > 0 && (
+                      <ul className="ws-files">
+                        {submission.attachments.map((file) => (
+                          <li key={file._id}>
+                            <span>{file.originalName}</span>
+                            <button type="button" className="ws-link-button" onClick={() => downloadAttachment(submission, file)}>Download</button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     {submission.feedback && (
                       <p className="ws-preserve">
                         Feedback: {submission.feedback}

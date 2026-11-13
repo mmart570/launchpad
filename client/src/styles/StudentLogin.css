@@ -1,4 +1,16 @@
-/* Establish the page's base layout, dimensions, and typography. */
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         StudentLogin.css                                   ║
+║                                                                            ║
+║  panel (hero messaging) and login form card on right. Form includes        ║
+║  remember me option, password recovery link, and signup redirect.          ║
+║  remember me option, password recovery link, and signup redirect.          ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND COLUMN STRUCTURE
+   ────────────────────────────────────────────────────────────────────────── */
 .student-login-page {
   display: grid;
   grid-template-columns: 1fr 1fr;

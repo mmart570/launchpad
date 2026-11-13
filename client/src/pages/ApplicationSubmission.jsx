@@ -1,3 +1,20 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                     ApplicationSubmission.jsx                              ║
+║                                                                            ║
+║  Student work application submission form page. Allows students to         ║
+║  submit applications to work orders with a note about availability.        ║
+║  Shows work order summary and confirmation message after submission.       ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Retrieves work order details from server                                ║
+║  - Checks for existing pending applications (prevents duplicates)          ║
+║  - Form validation for note and availability fields                        ║
+║  - Success message with next steps after submission                        ║
+║  - Responsive layout with form card and confirmation panel                 ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import "../styles/ApplicationSubmission.css";
@@ -38,6 +55,48 @@ function ApplicationSubmission() {
   const [notice, setNotice] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [existingApplication, setExistingApplication] = useState(null);
+  const [checkingApplication, setCheckingApplication] = useState(true);
+  const [applicationError, setApplicationError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadMyApplication() {
+      const session = getStudentSession();
+      if (!session) {
+        if (!cancelled) { setCheckingApplication(false); setApplicationError("Please log in with your student account."); }
+        return;
+      }
+      try {
+        const response = await fetch(`${API_URL}/api/applications/my`, {
+          headers: { Authorization: `Bearer ${session.token}` },
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !Array.isArray(data)) {
+          throw new Error(data?.error || "Unable to check existing applications.");
+        }
+        const existing = data.find((item) =>
+          String(item.workOrderId?._id || item.workOrderId) === String(id)
+        ) || null;
+        if (!cancelled) {
+          setExistingApplication(existing);
+          if (existing) {
+            const saved = existing.message || "";
+            const match = saved.match(/(?:^|\n)Availability: ([^\n]*)\s*$/);
+            setAvailability(match ? match[1].trim() : "");
+            setNote(match ? saved.slice(0, match.index).trim() : saved.trim());
+          }
+        }
+      } catch (err) {
+        if (!cancelled) setApplicationError(err.message);
+      } finally {
+        if (!cancelled) setCheckingApplication(false);
+      }
+    }
+    loadMyApplication();
+    return () => { cancelled = true; };
+  }, [id]);
+
 
   // Load the real work order from MongoDB.
   useEffect(() => {
@@ -81,7 +140,10 @@ function ApplicationSubmission() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (submitting || submitted) return;
+    if (submitting || submitted || checkingApplication || applicationError) return;
+    if (existingApplication && existingApplication.status !== "pending") {
+      return setNotice("Only pending applications can be edited.");
+    }
 
     setNotice("");
 
@@ -90,7 +152,7 @@ function ApplicationSubmission() {
       return;
     }
 
-    if (!workOrder || workOrder.status !== "open") {
+    if (!workOrder || (!existingApplication && workOrder.status !== "open")) {
       setNotice("This work order is not available for applications.");
       return;
     }
@@ -113,9 +175,11 @@ function ApplicationSubmission() {
       ].join("\n");
 
       const response = await fetch(
-        `${API_URL}/api/work-orders/${id}/applications`,
+        existingApplication
+          ? `${API_URL}/api/applications/${existingApplication._id}`
+          : `${API_URL}/api/work-orders/${id}/applications`,
         {
-          method: "POST",
+          method: existingApplication ? "PATCH" : "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session.token}`,
@@ -189,7 +253,7 @@ function ApplicationSubmission() {
           {!submitted && (
             <section className="application-submission-section">
               <div className="application-submission-card">
-                <h1>Apply for this work order</h1>
+                <h1>{existingApplication ? "Edit application" : "Apply for this work order"}</h1>
 
                 <div className="application-submission-divider" />
 
@@ -212,6 +276,11 @@ function ApplicationSubmission() {
                   </div>
                 </div>
 
+                {checkingApplication && <p role="status">Checking your application...</p>}
+                {applicationError && <p role="alert">{applicationError}</p>}
+                {existingApplication?.status !== "pending" && existingApplication && (
+                  <p role="status">Your application has been {existingApplication.status}. It can no longer be edited.</p>
+                )}
                 <form onSubmit={handleSubmit}>
                   <div className="application-submission-field">
                     <label htmlFor="application-note">
@@ -228,7 +297,7 @@ function ApplicationSubmission() {
                       }}
                       rows={5}
                       required
-                      disabled={submitting}
+                      disabled={submitting || checkingApplication || !!applicationError || (existingApplication && existingApplication.status !== "pending")}
                     />
                   </div>
 
@@ -247,7 +316,7 @@ function ApplicationSubmission() {
                         setNotice("");
                       }}
                       required
-                      disabled={submitting}
+                      disabled={submitting || checkingApplication || !!applicationError || (existingApplication && existingApplication.status !== "pending")}
                     />
                   </div>
 
@@ -257,12 +326,15 @@ function ApplicationSubmission() {
                     disabled={
                       submitting ||
                       loadingOrder ||
+                      checkingApplication ||
+                      !!applicationError ||
+                      (existingApplication && existingApplication.status !== "pending") ||
                       !!orderError ||
                       !workOrder ||
-                      workOrder.status !== "open"
+                      (!existingApplication && workOrder.status !== "open")
                     }
                   >
-                    {submitting ? "Submitting..." : "Submit application"}
+                    {submitting ? "Saving..." : existingApplication ? "Save changes" : "Submit application"}
                   </button>
 
                   {notice && (
@@ -290,11 +362,12 @@ function ApplicationSubmission() {
                   ✓
                 </div>
 
-                <h2>Application submitted!</h2>
+                <h2>{existingApplication ? "Application updated!" : "Application submitted!"}</h2>
 
                 <p className="application-confirmation-description">
-                  Your application has been saved and sent to the business for
-                  review.
+                  {existingApplication
+                    ? "Your updated application has been saved for the business to review."
+                    : "Your application has been saved and sent to the business for review."}
                 </p>
 
                 <div className="application-confirmation-steps">

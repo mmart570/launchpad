@@ -1,8 +1,13 @@
+// ============================================================================
+// BUSINESS INFORMATION MODAL COMPONENT
+// ============================================================================
+// Displays detailed business profile information in a modal dialog
+
 import { useEffect } from "react";
 import "../styles/BusinessInformation.css";
 
 function BusinessInformation({ onClose, onMessage }) {
-  // Close the dialog when Escape is pressed and remove the listener on cleanup.
+  // Handle Escape key to close the modal
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key === "Escape") {
@@ -18,7 +23,7 @@ function BusinessInformation({ onClose, onMessage }) {
   }, [onClose]);
 
   return (
-    // Dim the page behind the business profile dialog.
+    // Overlay backdrop - clicking on it closes the modal
     <div
       className="business-info-overlay"
       onMouseDown={(event) => {
@@ -27,14 +32,14 @@ function BusinessInformation({ onClose, onMessage }) {
         }
       }}
     >
-      {/* Expose the business profile as an accessible modal dialog. */}
+      {/* Accessible modal dialog for business information */}
       <section
         className="business-info-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="business-info-title"
       >
-        {/* Present the business identity and dialog close control. */}
+        {/* Header with business name, verification badge, and close button */}
         <div className="business-info-header">
           <div className="business-info-identity">
             <div className="business-info-avatar">[BN]</div>
@@ -55,12 +60,12 @@ function BusinessInformation({ onClose, onMessage }) {
           </button>
         </div>
 
-        {/* Summarize the business before showing profile details. */}
+        {/* Brief business description */}
         <p className="business-info-description">
           [Short description of the business and what it does.]
         </p>
 
-        {/* Display key business attributes in a two-column layout. */}
+        {/* Key business metrics and information in grid layout */}
         <div className="business-info-grid">
           <div>
             <strong>Industry</strong>
@@ -93,7 +98,7 @@ function BusinessInformation({ onClose, onMessage }) {
           </div>
         </div>
 
-        {/* Offer messaging and return actions for the work order page. */}
+        {/* Action buttons for messaging and returning to work order */}
         <div className="business-info-actions">
           <button
             type="button"

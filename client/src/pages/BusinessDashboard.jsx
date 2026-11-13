@@ -1,3 +1,21 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                       BusinessDashboard.jsx                                ║
+║                                                                            ║
+║  Primary business user dashboard. Displays business metrics, work          ║
+║  order management panel, and pending applicants. Business can view         ║
+║  applicants, accept/reject applications, and manage work order status.     ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Business metrics cards (open orders, total applicants, etc)             ║
+║  - Work order management with status filtering                             ║
+║  - Applicant panel showing pending applications                            ║
+║  - Accept/reject application buttons with confirmation                     ║
+║  - Draft, open, in-progress order status management                        ║
+║  - Delete work order capability (draft orders only)                        ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/BusinessDashboard.css";
@@ -99,7 +117,7 @@ function getStudentInitials(student) {
 function BusinessDashboard() {
   const [workOrders, setWorkOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("open");
-  const [deletingOrderId, setDeletingOrderId] = useState(null);
+  const [decidingApplicationId, setDecidingApplicationId] = useState(null);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   const [applicantsByOrder, setApplicantsByOrder] = useState({});
@@ -110,6 +128,7 @@ function BusinessDashboard() {
 
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [submissionCounts, setSubmissionCounts] = useState({});
 
   const session = getBusinessSession();
   const businessUserId = session?.user.userId;
@@ -214,6 +233,15 @@ function BusinessDashboard() {
         });
 
         setApplicantsByOrder(nextApplicants);
+        const activeOrders = businessOrders.filter(order => order.status === "in_progress");
+        const reviews = await Promise.allSettled(activeOrders.map(async order => {
+          const response = await fetch(`${API_URL}/api/work-orders/${order._id}/submissions`, { headers: { Authorization: `Bearer ${businessToken}` } });
+          const data = await response.json().catch(() => null);
+          if (!response.ok || !Array.isArray(data)) throw new Error("Unable to load submissions");
+          return { id: order._id, pending: data.some(s => s.status === "pending_review") ? 1 : 0 };
+        }));
+        if (!cancelled) setSubmissionCounts(Object.fromEntries(reviews.filter(r => r.status === "fulfilled").map(r => [r.value.id, r.value.pending])));
+
         setApplicantErrors(nextErrors);
       } catch (err) {
         if (!cancelled) {
@@ -300,6 +328,7 @@ function BusinessDashboard() {
     },
     { label: "In progress", value: inProgressCount },
     { label: "Completed", value: completedCount },
+    { label: "Awaiting review", value: Object.values(submissionCounts).reduce((sum, n) => sum + n, 0) },
   ];
 
   function handleReviewApplicants(orderId) {
@@ -368,6 +397,8 @@ function BusinessDashboard() {
   }
 
   async function handleApplicationDecision(applicationId, status) {
+    if (decidingApplicationId) return;
+
     const session = getBusinessSession();
 
     if (!session) {
@@ -375,6 +406,7 @@ function BusinessDashboard() {
       return;
     }
 
+    setDecidingApplicationId(applicationId);
     setNotice("");
 
     try {
@@ -396,12 +428,12 @@ function BusinessDashboard() {
         throw new Error(result?.error || "Unable to update application.");
       }
 
-      // Reload so work order statuses and applicant counts
-      // reflect the latest data from MongoDB.
       window.location.reload();
     } catch (error) {
       console.error("Application decision failed:", error);
-      setNotice(error.message);
+      setNotice(error.message || "Unable to update application.");
+    } finally {
+      setDecidingApplicationId(null);
     }
   }
 
@@ -617,6 +649,9 @@ function BusinessDashboard() {
                             : "Delete"}
                         </button>
                       )}
+                      {order.status !== "draft" && (
+                        <Link to={`/business/work-orders/${order._id}/messages`} className="business-dashboard-outline">Messages</Link>
+                      )}
                       {order.status === "in_progress" && (
                         <Link
                           to={`/business/work-orders/${order._id}/submissions`}
@@ -739,6 +774,7 @@ function BusinessDashboard() {
                           <button
                             type="button"
                             className="business-dashboard-accept"
+                            disabled={decidingApplicationId !== null}
                             onClick={() =>
                               handleApplicationDecision(
                                 application._id,
@@ -746,12 +782,15 @@ function BusinessDashboard() {
                               )
                             }
                           >
-                            Accept
+                            {decidingApplicationId === application._id
+                              ? "Processing..."
+                              : "Accept"}
                           </button>
 
                           <button
                             type="button"
                             className="business-dashboard-outline"
+                            disabled={decidingApplicationId !== null}
                             onClick={() =>
                               handleApplicationDecision(
                                 application._id,
@@ -759,7 +798,9 @@ function BusinessDashboard() {
                               )
                             }
                           >
-                            Reject
+                            {decidingApplicationId === application._id
+                              ? "Processing..."
+                              : "Reject"}
                           </button>
                         </>
                       )}

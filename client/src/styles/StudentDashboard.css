@@ -1,4 +1,16 @@
-/* Set the dashboard's page-wide dimensions, colors, and typography. */
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        StudentDashboard.css                                ║
+║                                                                            ║
+║  Styling for the student work order discovery dashboard. Displays          ║
+║  browsable work orders in responsive grid with category filters,           ║
+║  status badges, and business verification indicators.                      ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND BASE STYLING
+   ────────────────────────────────────────────────────────────────────────── */
 .student-dashboard-page {
   min-height: 100vh;
   width: 100%;

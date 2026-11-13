@@ -1,3 +1,21 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                      StudentPublicProfile.jsx                              ║
+║                                                                            ║
+║  Public-facing student profile viewable by business users. Displays        ║
+║  student information as read-only profile card with skills and             ║
+║  portfolio. Business can message student or view work history.             ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Read-only student profile display                                       ║
+║  - Skills and experience showcase                                          ║
+║  - Portfolio of completed projects                                         ║
+║  - Business messaging capability from profile                              ║
+║  - Business information modal with profile details                         ║
+║  - School and academic background display                                  ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import "../styles/StudentProfile.css";

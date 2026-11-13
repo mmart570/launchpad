@@ -1,4 +1,17 @@
-/* Establish the page's base layout, dimensions, and typography (matches StudentLogin). */
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        StudentSignup.css                                   ║
+║                                                                            ║
+║  Styling for student account creation form. Two-column layout with         ║
+║  branded left panel and signup form on right. Form includes first/last     ║
+║  name, email, password (with visibility toggle), school, major, and        ║
+║  graduation year fields. Responsive design with single-column mobile.      ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND COLUMN STRUCTURE
+   ────────────────────────────────────────────────────────────────────────── */
 .su-page {
   display: grid;
   grid-template-columns: 1fr 1fr;

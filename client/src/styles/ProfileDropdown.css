@@ -1,5 +1,17 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                       ProfileDropdown.css                                  ║
+║                                                                            ║
+║  Minimal styling for user profile dropdown menu component. Positioned      ║
+║  absolutely below trigger element with hover effects and focus states.     ║
+║  Used by both student and business user profiles.                          ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   DROPDOWN COMPONENT STYLING
+   ────────────────────────────────────────────────────────────────────────── */
 .profile-dropdown {
-  position: relative;
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;

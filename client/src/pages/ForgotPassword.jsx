@@ -1,3 +1,20 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        ForgotPassword.jsx                                  ║
+║                                                                            ║
+║  Password recovery flow page. Two-step process: email lookup and           ║
+║  password reset. User enters email to find account, then enters new        ║
+║  password. Displays validation feedback and success messages.              ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Email lookup step to find account                                       ║
+║  - Password reset with confirmation                                        ║
+║  - Input validation and error display                                      ║
+║  - Success confirmation message                                            ║
+║  - Return to login link                                                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/ForgotPassword.css";

@@ -1,11 +1,16 @@
-.my-applications-page {
-  min-height: 100vh;
-  background-color: #f3f6fa;
-  color: #0d203b;
-  font-family: Inter, system-ui, Arial, sans-serif;
-}
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        MyApplications.css                                  ║
+║                                                                            ║
+║  Styling for student applications dashboard. Displays list of submitted    ║
+║  applications with status filters, business icons, and status badges.      ║
+║  Responsive card layout with action links and application details.         ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
 
-/* Lay out the site brand and student navigation links. */
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND BASE STYLING
+   ────────────────────────────────────────────────────────────────────────── */
 
 .my-applications-navbar {
   min-height: 90px;
@@ -341,11 +346,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 11px 18px;
-  border-radius: 8px;
+
+  min-height: 53px;
+  padding: 0 18px;
+  box-sizing: border-box;
+
+  border-radius: 11px;
   background-color: #2161ff;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
@@ -354,4 +363,11 @@
 
 .my-applications-submit-work:hover {
   background-color: #174dcc;
+}
+
+@media (max-width: 600px) {
+  .my-applications-submit-work {
+    min-height: 43px;
+    font-size: 14px;
+  }
 }

@@ -1,3 +1,20 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        LandingPage.jsx                                     ║
+║                                                                            ║
+║  Public-facing landing page with hero section and "How It Works" flow.     ║
+║  Introduces LaunchPad platform to visitors and provides entry points       ║
+║  for student signup and business work posting.                             ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Hero section with brand messaging and CTA buttons                       ║
+║  - Navigation bar with signup entry point                                  ║
+║  - "How It Works" section with 3-step process cards                        ║
+║  - Responsive design for all screen sizes                                  ║
+║  - Links to student/business auth flows                                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import Navbar from "../components/NavBar";
 import { Link } from "react-router-dom";
 import "../styles/LandingPage.css";

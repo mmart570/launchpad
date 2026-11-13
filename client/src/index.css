@@ -1,3 +1,10 @@
+/* =========================================================================
+   LAUNCHPAD GLOBAL STYLES
+   =========================================================================
+   Global CSS reset and base styling for the entire application
+   ========================================================================= */
+
+/* Root styles - font stack and rendering optimizations */
 :root {
   font-family:
     Inter,
@@ -12,10 +19,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Box sizing reset for all elements */
 * {
   box-sizing: border-box;
 }
 
+/* Full-height layout with no margins */
 html,
 body,
 #root {
@@ -24,10 +33,12 @@ body,
   margin: 0;
 }
 
+/* Minimum viewport width for mobile support */
 body {
   min-width: 320px;
 }
 
+/* Inherit font settings for buttons and links */
 button,
 a {
   font: inherit;

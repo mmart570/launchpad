@@ -1,3 +1,23 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         BusinessPage.jsx                                   ║
+║                                                                            ║
+║  Business work order creation and posting form. Allows businesses to       ║
+║  create new job postings with detailed specifications. Includes work       ║
+║  type, service type, pay rate, schedule, scope, and deliverables.          ║
+║  Displays real-time cost calculation and allows draft/publish options.     ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Multi-field form for work order details                                 ║
+║  - Work type and service type selection                                    ║
+║  - Payment and schedule configuration                                      ║
+║  - Real-time cost summary calculation                                      ║
+║  - Draft/publish toggle for post-now or save-for-later                     ║
+║  - Scope and deliverables description fields                               ║
+║  - Form validation before submission                                       ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "../styles/BusinessPage.css";
@@ -352,6 +372,7 @@ function BusinessPage() {
         </Link>
 
         <nav className="business-nav">
+          {isEditing && <Link to={`/work-orders/${editId}?tab=messages`}>Work order messages</Link>}
           <Link to="/business-dashboard" className="business-account-name">
             Business Dashboard
           </Link>

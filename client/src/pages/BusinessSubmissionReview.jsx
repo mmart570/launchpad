@@ -1,3 +1,21 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    BusinessSubmissionReview.jsx                            ║
+║                                                                            ║
+║  Business interface for reviewing student work submissions. Displays       ║
+║  submitted files, submission history, and provides feedback form.          ║
+║  Business can download submissions and provide acceptance/rejection        ║
+║  feedback with optional comments.                                          ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Submission file display with download links                             ║
+║  - Submission history tracking with timestamps                             ║
+║  - Feedback form for acceptance/rejection                                  ║
+║  - Optional comment field for detailed feedback                            ║
+║  - Mark submission as accepted or rejected                                 ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ProfileDropdown from "../components/ProfileDropdown";
@@ -36,7 +54,7 @@ export default function BusinessSubmissionReview() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  async function load() {
+  async function load({ preserveMessages = false } = {}) {
     const token = getToken();
     if (!token) {
       setError("Please sign in as a business.");
@@ -44,7 +62,7 @@ export default function BusinessSubmissionReview() {
       return;
     }
     setLoading(true);
-    setError("");
+    if (!preserveMessages) setError("");
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const [ordersResponse, submissionsResponse] = await Promise.all([
@@ -101,6 +119,8 @@ export default function BusinessSubmissionReview() {
   }
 
   async function review(submission, decision) {
+    if (busy || loading || submission.status !== "pending_review") return;
+
     if (decision === "changes_requested" && !feedback.trim()) {
       setError("Enter feedback before requesting changes.");
       return;
@@ -138,7 +158,7 @@ export default function BusinessSubmissionReview() {
           ? "Submission approved. Work order completed."
           : "Changes requested. The student can resubmit.",
       );
-      await load();
+      await load({ preserveMessages: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -156,9 +176,22 @@ export default function BusinessSubmissionReview() {
         </Link>
         <nav>
           <Link to="/business-dashboard">Dashboard</Link>
-          <ProfileDropdown role="business" initials="BU" />
+          <ProfileDropdown role="business" initials="BU" avatarClassName="ws-business-avatar" />
         </nav>
       </header>
+      <style>{`
+        .ws-navbar .ws-business-avatar {
+          width: 39px;
+          height: 39px;
+          padding: 0;
+          border: 0;
+          border-radius: 50%;
+          background: #2161ff;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 700;
+        }
+      `}</style>
       <main className="ws-main">
         <Link to="/business-dashboard" className="ws-back">
           ← Back to dashboard
@@ -176,7 +209,7 @@ export default function BusinessSubmissionReview() {
             {notice}
           </p>
         )}
-        {!loading && !error && submissions.length === 0 && (
+        {!loading && order && submissions.length === 0 && (
           <section className="ws-card">
             <p>
               No work has been submitted yet. The assigned student will submit
@@ -184,7 +217,7 @@ export default function BusinessSubmissionReview() {
             </p>
           </section>
         )}
-        {!loading &&
+        {!loading && order &&
           submissions.map((submission, index) => (
             <section className="ws-card" key={submission._id}>
               <div className="ws-card-heading">
@@ -261,7 +294,7 @@ export default function BusinessSubmissionReview() {
                         disabled={busy}
                         onClick={() => review(submission, "changes_requested")}
                       >
-                        Request changes
+                        {busy ? "Processing..." : "Request changes"}
                       </button>
                       <button
                         type="button"
@@ -269,7 +302,7 @@ export default function BusinessSubmissionReview() {
                         disabled={busy}
                         onClick={() => review(submission, "approved")}
                       >
-                        Approve work
+                        {busy ? "Processing..." : "Approve work"}
                       </button>
                     </div>
                   </div>

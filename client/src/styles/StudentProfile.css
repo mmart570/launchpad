@@ -1,11 +1,16 @@
-.student-profile-page {
-  min-height: 100vh;
-  background-color: #f3f6fa;
-  color: #0d203b;
-  font-family: Inter, system-ui, Arial, sans-serif;
-}
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        StudentProfile.css                                  ║
+║                                                                            ║
+║  Styling for student profile page. Displays profile card with avatar,      ║
+║  identity info, skills tags, and work statistics. Portfolio section        ║
+║  shows completed projects as a responsive grid of project cards.           ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
 
-/* Align the LaunchPad brand with the student's primary navigation. */
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND BASE STYLING
+   ────────────────────────────────────────────────────────────────────────── */
 .student-profile-navbar {
   min-height: 64px;
   padding: 0 48px;

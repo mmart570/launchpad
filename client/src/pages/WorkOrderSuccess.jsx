@@ -1,5 +1,23 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        WorkOrderSuccess.jsx                                ║
+║                                                                            ║
+║  Success confirmation page after business posts a work order. Displays     ║
+║  confirmation message with next steps and links to dashboard or post       ║
+║  another job. Confirms work order was created and is now discoverable      ║
+║  by students.                                                              ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Success confirmation messaging                                          ║
+║  - Navigation to business dashboard                                        ║
+║  - Option to post another work order                                       ║
+║  - Notification icon/link                                                  ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { Link, useLocation } from "react-router-dom";
 import "../styles/BusinessPage.css";
+import NotificationBell from "../components/NotificationBell";
 
 export default function WorkOrderSuccess() {
   const { state } = useLocation();
@@ -11,6 +29,7 @@ export default function WorkOrderSuccess() {
           Launch<span>Pad</span>
           <small>for Business</small>
         </Link>
+        <NotificationBell role="business" />
       </header>
 
       <main

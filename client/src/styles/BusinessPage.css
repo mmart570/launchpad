@@ -1,4 +1,16 @@
-/* Set page-wide colors, typography, and minimum height. */
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         BusinessPage.css                                   ║
+║                                                                            ║
+║  Styling for business work order creation and posting page. Manages        ║
+║  form layout with side-by-side form and cost summary, field grouping,      ║
+║  and responsive grid adjustments for smaller viewports.                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND BASE STYLING
+   ────────────────────────────────────────────────────────────────────────── */
 .business-page {
   min-height: 100vh;
   background-color: #f3f6fa;
@@ -283,26 +295,46 @@
   }
 }
 
-/* Add to the bottom of client/src/styles/BusinessPage.css */
-.business-empty-submission-option {
+/* Submission checkbox: spacing and vertical alignment */
+.business-card-body label.business-empty-submission-option {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-top: 18px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  margin: 16px 0 0;
+  padding: 0;
+
   cursor: pointer;
-  font-weight: 600;
-  line-height: 1.5;
 }
-.business-empty-submission-option input[type="checkbox"] {
+
+.business-card-body
+  .business-empty-submission-option
+  input[type="checkbox"] {
+  appearance: auto;
   width: 18px;
   height: 18px;
+  min-width: 18px;
+
+  margin: 0;
+  padding: 0;
   flex: 0 0 18px;
-  margin-top: 2px;
+
   accent-color: #2161ff;
   cursor: pointer;
 }
-.business-submission-help {
-  margin: 8px 0 0;
+
+.business-card-body .business-empty-submission-option span {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+/* Space between checkbox row and helper text */
+.business-card-body .business-submission-help {
+  margin: 14px 0 0;
   font-size: 13px;
   color: #64748b;
   line-height: 1.5;

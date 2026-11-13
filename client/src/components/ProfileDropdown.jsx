@@ -1,9 +1,16 @@
+// ============================================================================
+// PROFILE DROPDOWN COMPONENT
+// ============================================================================
+// Displays user avatar and dropdown menu with profile/logout options
+
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/ProfileDropdown.css";
+import NotificationBell from "./NotificationBell";
 
 const API_URL = "http://localhost:3000";
 
+// Helper: Retrieve student authentication token from browser storage
 function getStudentToken() {
   for (const storage of [sessionStorage, localStorage]) {
     const token = storage.getItem("launchpad_token");
@@ -18,7 +25,7 @@ function getStudentToken() {
         return token;
       }
     } catch {
-      // Ignore invalid saved sessions.
+      // Ignore invalid saved sessions
     }
   }
 
@@ -36,6 +43,7 @@ function ProfileDropdown({
 
   const isBusiness = role === "business";
 
+  // Load student's actual initials from their profile
   useEffect(() => {
     if (isBusiness) {
       setDisplayInitials(initials);
@@ -85,6 +93,7 @@ function ProfileDropdown({
 
   const profilePath = isBusiness ? "/business-dashboard" : "/profile";
 
+  // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
     function handleOutsideClick(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -107,14 +116,33 @@ function ProfileDropdown({
     };
   }, []);
 
-  function handleLogout() {
-    // Clear saved student and business sessions.
-    for (const storage of [sessionStorage, localStorage]) {
-      storage.removeItem("launchpad_token");
-      storage.removeItem("launchpad_user");
-    }
+  // Handle user logout
+  async function handleLogout() {
+    const token =
+      sessionStorage.getItem("launchpad_token") ||
+      localStorage.getItem("launchpad_token");
 
-    window.location.replace("/");
+    try {
+      if (token) {
+        await fetch(`${API_URL}/api/auth/logout`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Logout request failed:", error);
+    } finally {
+      // Clear all stored authentication data
+      for (const storage of [sessionStorage, localStorage]) {
+        storage.removeItem("launchpad_token");
+        storage.removeItem("launchpad_user");
+      }
+
+      // Redirect to landing page
+      window.location.replace("/");
+    }
   }
 
   const avatarStyle =
@@ -122,37 +150,40 @@ function ProfileDropdown({
     (isBusiness ? "business-dashboard-nav-avatar" : "dashboard-avatar");
 
   return (
-    <div className="profile-dropdown" ref={menuRef}>
-      <button
-        type="button"
-        className={`${avatarStyle} profile-dropdown-trigger`}
-        onClick={() => setOpen((previous) => !previous)}
-        aria-label="Account menu"
-        aria-expanded={open}
-        aria-haspopup="true"
-      >
-        {displayInitials}
-      </button>
+    <div style={{ display: "inline-flex", alignItems: "center", gap: "12px" }}>
+      <NotificationBell role={role} />
+      <div className="profile-dropdown" ref={menuRef}>
+        <button
+          type="button"
+          className={`${avatarStyle} profile-dropdown-trigger`}
+          onClick={() => setOpen((previous) => !previous)}
+          aria-label="Account menu"
+          aria-expanded={open}
+          aria-haspopup="true"
+        >
+          {displayInitials}
+        </button>
 
-      {open && (
-        <div className="profile-dropdown-menu">
-          <Link
-            to={profilePath}
-            className="profile-dropdown-item"
-            onClick={() => setOpen(false)}
-          >
-            {isBusiness ? "Business Dashboard" : "View profile"}
-          </Link>
+        {open && (
+          <div className="profile-dropdown-menu">
+            <Link
+              to={profilePath}
+              className="profile-dropdown-item"
+              onClick={() => setOpen(false)}
+            >
+              {isBusiness ? "Business Dashboard" : "View profile"}
+            </Link>
 
-          <button
-            type="button"
-            className="profile-dropdown-item profile-dropdown-logout"
-            onClick={handleLogout}
-          >
-            Log out
-          </button>
-        </div>
-      )}
+            <button
+              type="button"
+              className="profile-dropdown-item profile-dropdown-logout"
+              onClick={handleLogout}
+            >
+              Log out
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

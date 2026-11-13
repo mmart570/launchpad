@@ -1,5 +1,16 @@
-/* Landing Page */
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         LandingPage.css                                    ║
+║                                                                            ║
+║  Styling for the public landing page. Includes hero section with nav,      ║
+║  call-to-action buttons, and "How It Works" section with step cards.       ║
+║  Responsive design optimized for desktop-first with mobile breakpoints.    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
 
+/* ──────────────────────────────────────────────────────────────────────────
+   LANDING PAGE BASE STYLING
+   ────────────────────────────────────────────────────────────────────────── */
 .landing-page {
   width: 100%;
   min-height: 100vh;

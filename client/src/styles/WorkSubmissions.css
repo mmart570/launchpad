@@ -1,9 +1,17 @@
-.ws-page {
-  min-height: 100vh;
-  background: #f5f7fb;
-  color: #14233b;
-  font-family: inherit;
-}
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        WorkSubmissions.css                                 ║
+║                                                                            ║
+║  Styling for work submission management page. Displays submitted work      ║
+║  with file upload/dropzone, file list, status indicators, feedback         ║
+║  messages, and submission history. Used for reviewing student work         ║
+║  submissions and providing feedback on completed tasks.                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND BASE STYLING
+   ────────────────────────────────────────────────────────────────────────── */
 .ws-navbar {
   background: #10213b;
   color: #fff;
@@ -124,6 +132,7 @@
   gap: 8px;
   text-align: center;
   padding: 20px;
+  margin-bottom: 16px;
 }
 .ws-dropzone.ws-dragging {
   border-color: #2161ff;

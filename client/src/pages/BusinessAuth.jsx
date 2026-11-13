@@ -1,3 +1,21 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         BusinessAuth.jsx                                   ║
+║                                                                            ║
+║  Business account signup and login page. Provides tabbed interface for     ║
+║  toggling between signup and login forms. Handles business registration    ║
+║  with company name, contact name, email, and password. Validates input     ║
+║  and displays error/success messages.                                      ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Tab-based UI for signup/login switching                                 ║
+║  - Form validation for required fields                                     ║
+║  - Error and success message display                                       ║
+║  - Account creation with role-based token management                       ║
+║  - Navigation to dashboard after successful auth                           ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/BusinessAuth.css";

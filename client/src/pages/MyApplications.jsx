@@ -1,3 +1,22 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        MyApplications.jsx                                  ║
+║                                                                            ║
+║  Student applications history and status dashboard. Displays all           ║
+║  submitted applications with filtering by status (pending, accepted,       ║
+║  rejected). Shows work order title, business name, application status      ║
+║  and links to application details.                                         ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Status filter buttons (all, pending, accepted, rejected)                ║
+║  - Application list with status badges                                     ║
+║  - Business icon and company name display                                  ║
+║  - Details link to view application information                            ║
+║  - Empty state message when no applications match filter                   ║
+║  - Link to submit new work (application form)                              ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/MyApplications.css";

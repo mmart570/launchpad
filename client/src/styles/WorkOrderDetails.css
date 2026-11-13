@@ -1,4 +1,16 @@
-/* Set page-wide colors, typography, and minimum viewport height. */
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        WorkOrderDetails.css                                ║
+║                                                                            ║
+║  Styling for work order details page. Displays comprehensive work          ║
+║  order information with summary strip, tabbed details/messages view,       ║
+║  two-column layout separating work details from payment breakdown.         ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND BASE STYLING
+   ────────────────────────────────────────────────────────────────────────── */
 .work-details-page {
   min-height: 100vh;
   background: #f3f6fa;
@@ -113,7 +125,8 @@
 }
 
 /* Set shared dimensions and interactive styling for action buttons. */
-.work-details-actions button {
+.work-details-actions button,
+.work-details-actions a.work-action-outline {
   min-height: 45px;
   padding: 0 22px;
   border-radius: 9px;
@@ -135,9 +148,25 @@
 
 /* Distinguish secondary actions from the primary action. */
 .work-action-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
   border: 1.5px solid #2161ff;
+  border-radius: 9px;
   background: #fff;
   color: #2161ff;
+
+  text-decoration: none;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.work-action-outline:hover {
+  background: #eaf0ff;
+  color: #2161ff;
+  text-decoration: none;
 }
 
 .work-action-outline:hover {

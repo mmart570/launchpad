@@ -1,3 +1,23 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        StudentProfile.jsx                                  ║
+║                                                                            ║
+║  Student profile viewing and editing page. Displays student identity       ║
+║  information (name, school, major, graduation year), skills, and           ║
+║  portfolio of completed work. Provides edit button for profile updates     ║
+║  and shows work statistics (completed projects, hours worked, etc).        ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Student avatar and identity information                                 ║
+║  - Skills display as tags                                                  ║
+║  - Work statistics (completed projects, total hours)                       ║
+║  - Portfolio grid showing completed work orders                            ║
+║  - Edit profile button for profile updates                                 ║
+║  - Business verification badges on completed work                          ║
+║  - Responsive card and grid layouts                                        ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ProfileDropdown from "../components/ProfileDropdown";

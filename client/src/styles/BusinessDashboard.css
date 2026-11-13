@@ -1,11 +1,16 @@
-.business-dashboard-page {
-  min-height: 100vh;
-  background: #f3f6fa;
-  color: #0d203b;
-  font-family: Inter, system-ui, Arial, sans-serif;
-}
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                        BusinessDashboard.css                              ║
+║                                                                            ║
+║  Main dashboard styling for business users. Organizes work orders and    ║
+║  applicant management into parallel panels with statistics cards,        ║
+║  status indicators, and responsive grid layouts.                        ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
 
-/* Align the business wordmark with the dashboard and posting navigation. */
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND BASE STYLING
+   ────────────────────────────────────────────────────────────────────────── */
 .business-dashboard-navbar {
   min-height: 64px;
   padding: 0 44px;

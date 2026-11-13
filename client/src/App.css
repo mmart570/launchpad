@@ -1,3 +1,10 @@
+/* =========================================================================
+   LAUNCHPAD APP STYLES
+   =========================================================================
+   Main application styles for layout, components, and responsive design
+   ========================================================================= */
+
+/* Counter badge styling */
 .counter {
   font-size: 16px;
   padding: 5px 10px;
@@ -17,6 +24,7 @@
   }
 }
 
+/* Hero section with layered 3D transforms */
 .hero {
   position: relative;
 
@@ -56,6 +64,7 @@
   }
 }
 
+/* Central content area - flexible layout */
 #center {
   display: flex;
   flex-direction: column;
@@ -70,6 +79,7 @@
   }
 }
 
+/* Navigation/steps section with divider */
 #next-steps {
   display: flex;
   border-top: 1px solid var(--border);

@@ -1,3 +1,22 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                       StudentDashboard.jsx                                 ║
+║                                                                            ║
+║  Primary student dashboard displaying available work orders to apply       ║
+║  for. Provides browsable job listings with category filters and            ║
+║  verification badges. Shows business name, work description, and           ║
+║  provides quick access to work order details and application form.         ║
+║                                                                            ║
+║  Key Features:                                                             ║
+║  - Responsive grid of work order cards                                     ║
+║  - Category-based filtering (all, development, design, etc)                ║
+║  - Work order status and category badges                                   ║
+║  - Business verification checkmark indicator                               ║
+║  - Links to detailed work order views                                      ║
+║  - Search/discovery interface for students                                 ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/StudentDashboard.css";
@@ -11,6 +30,9 @@ function StudentDashboard() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [myApplications, setMyApplications] = useState([]);
+  const [myReports, setMyReports] = useState([]);
+  const [accountNotice, setAccountNotice] = useState("");
 
   // Fetch real work orders from Max's Express backend.
   useEffect(() => {
@@ -56,6 +78,32 @@ function StudentDashboard() {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    let token = null;
+    for (const storage of [sessionStorage, localStorage]) {
+      try {
+        if (JSON.parse(storage.getItem("launchpad_user") || "{}").role === "student") {
+          token = storage.getItem("launchpad_token");
+          if (token) break;
+        }
+      } catch { /* Invalid saved session */ }
+    }
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    Promise.all([
+      fetch(`${API_URL}/api/applications/my`, { headers, signal: controller.signal }),
+      fetch(`${API_URL}/api/reports/my`, { headers, signal: controller.signal }),
+    ]).then(async ([a, r]) => {
+      const applications = await a.json().catch(() => null);
+      const reports = await r.json().catch(() => null);
+      if (!a.ok || !Array.isArray(applications)) throw new Error("Unable to load your applications.");
+      if (!r.ok || !Array.isArray(reports)) throw new Error("Unable to load your reports.");
+      if (!controller.signal.aborted) { setMyApplications(applications); setMyReports(reports); }
+    }).catch(err => { if (!controller.signal.aborted) setAccountNotice(err.message); });
+    return () => controller.abort();
+  }, []);
+
   // Generate category filters from the database.
   const categories = [
     "All",
@@ -87,6 +135,18 @@ function StudentDashboard() {
       </header>
 
       <main className="dashboard-main">
+        <section className="dashboard-message" aria-label="My LaunchPad activity" style={{ marginBottom: 20 }}>
+          <h2>My activity</h2>
+          <p><strong>{myApplications.filter(a => a.status === "pending").length}</strong> pending applications · <strong>{myApplications.filter(a => a.status === "accepted").length}</strong> accepted · <strong>{myReports.length}</strong> problem reports</p>
+          {accountNotice && <p role="alert">{accountNotice}</p>}
+          {myApplications.filter(a => a.status === "accepted").map(a => {
+            const order = a.workOrderId;
+            if (!order?._id) return null;
+            return <p key={a._id}><strong>{order.title}</strong> — {order.status === "completed" ? "Completed" : "Active project"} · <Link to={`/student/work-orders/${order._id}/submit`}>View work submissions</Link> · <Link to={`/work-orders/${order._id}?tab=messages`}>Messages</Link></p>;
+          })}
+          <Link to="/my-applications">View all applications</Link>
+          {myReports.length > 0 && <details style={{ marginTop: 10 }}><summary>My problem reports</summary>{myReports.map(r => <p key={r._id}>{r.reason} — {r.status} · {new Date(r.createdAt).toLocaleDateString()}</p>)}</details>}
+        </section>
         <h1>Open work orders</h1>
 
         <p className="dashboard-subtitle">

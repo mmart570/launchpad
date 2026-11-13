@@ -1,9 +1,27 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════╗
+║                       ApplicationSubmission.css                            ║
+║                                                                            ║
+║  Styles for the student work submission form page. Manages layout and      ║
+║  appearance of the submission flow with form card and confirmation         ║
+║  side-by-side. Supports responsive design for tablets and mobile.          ║
+╚════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PAGE LAYOUT AND BASE STYLING
+   ────────────────────────────────────────────────────────────────────────── */
+
 .application-submission-page {
   min-height: 100vh;
   background-color: #f3f6fa;
   color: #0d203b;
   font-family: Inter, system-ui, Arial, sans-serif;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   HEADER AND NAVIGATION
+   ────────────────────────────────────────────────────────────────────────── */
 
 /* Align the LaunchPad brand and student navigation in the page header. */
 .application-submission-navbar {
