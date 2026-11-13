@@ -147,7 +147,7 @@ export default function StudentWorkSubmission() {
       files.length === 0
     ) {
       setError(
-        "This work order requires notes, a project link, or at least one file."
+        "This work order requires notes, a project link, or at least one file.",
       );
       return;
     }
@@ -398,7 +398,14 @@ export default function StudentWorkSubmission() {
                     )}
                     {submission.projectUrl && (
                       <p className="ws-preserve">
-                        Project link: <a href={submission.projectUrl} target="_blank" rel="noopener noreferrer">{submission.projectUrl}</a>
+                        Project link:{" "}
+                        <a
+                          href={submission.projectUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {submission.projectUrl}
+                        </a>
                       </p>
                     )}
                     {submission.attachments?.length > 0 && (
@@ -406,7 +413,15 @@ export default function StudentWorkSubmission() {
                         {submission.attachments.map((file) => (
                           <li key={file._id}>
                             <span>{file.originalName}</span>
-                            <button type="button" className="ws-link-button" onClick={() => downloadAttachment(submission, file)}>Download</button>
+                            <button
+                              type="button"
+                              className="ws-link-button"
+                              onClick={() =>
+                                downloadAttachment(submission, file)
+                              }
+                            >
+                              Download
+                            </button>
                           </li>
                         ))}
                       </ul>

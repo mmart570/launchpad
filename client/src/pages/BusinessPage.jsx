@@ -372,7 +372,11 @@ function BusinessPage() {
         </Link>
 
         <nav className="business-nav">
-          {isEditing && <Link to={`/work-orders/${editId}?tab=messages`}>Work order messages</Link>}
+          {isEditing && (
+            <Link to={`/work-orders/${editId}?tab=messages`}>
+              Work order messages
+            </Link>
+          )}
           <Link to="/business-dashboard" className="business-account-name">
             Business Dashboard
           </Link>
@@ -531,7 +535,10 @@ function BusinessPage() {
                   onChange={updateField}
                 />
 
-                <label className="business-empty-submission-option" htmlFor="business-allow-empty">
+                <label
+                  className="business-empty-submission-option"
+                  htmlFor="business-allow-empty"
+                >
                   <input
                     id="business-allow-empty"
                     name="allowEmptySubmission"
@@ -539,7 +546,9 @@ function BusinessPage() {
                     checked={form.allowEmptySubmission}
                     onChange={updateField}
                   />
-                  <span>Allow students to submit without notes, links, or files</span>
+                  <span>
+                    Allow students to submit without notes, links, or files
+                  </span>
                 </label>
                 <p className="business-submission-help">
                   {form.allowEmptySubmission

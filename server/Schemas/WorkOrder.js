@@ -68,7 +68,7 @@ const workOrderSchema = new mongoose.Schema(
     // Whether students can submit without any files
     allowEmptySubmission: { type: Boolean, default: false },
   },
-  { timestamps: true } // Automatically tracks createdAt and updatedAt
+  { timestamps: true }, // Automatically tracks createdAt and updatedAt
 );
 
 module.exports = mongoose.model("WorkOrder", workOrderSchema);

@@ -118,13 +118,14 @@ function BusinessDashboard() {
   const [workOrders, setWorkOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("open");
   const [decidingApplicationId, setDecidingApplicationId] = useState(null);
+  // Track the work order currently being deleted to prevent repeat clicks.
+  const [deletingOrderId, setDeletingOrderId] = useState(null);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   const [applicantsByOrder, setApplicantsByOrder] = useState({});
   const [applicantErrors, setApplicantErrors] = useState({});
 
   const [loading, setLoading] = useState(true);
-  const [loadingApplicants, setLoadingApplicants] = useState(false);
 
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -233,14 +234,32 @@ function BusinessDashboard() {
         });
 
         setApplicantsByOrder(nextApplicants);
-        const activeOrders = businessOrders.filter(order => order.status === "in_progress");
-        const reviews = await Promise.allSettled(activeOrders.map(async order => {
-          const response = await fetch(`${API_URL}/api/work-orders/${order._id}/submissions`, { headers: { Authorization: `Bearer ${businessToken}` } });
-          const data = await response.json().catch(() => null);
-          if (!response.ok || !Array.isArray(data)) throw new Error("Unable to load submissions");
-          return { id: order._id, pending: data.some(s => s.status === "pending_review") ? 1 : 0 };
-        }));
-        if (!cancelled) setSubmissionCounts(Object.fromEntries(reviews.filter(r => r.status === "fulfilled").map(r => [r.value.id, r.value.pending])));
+        const activeOrders = businessOrders.filter(
+          (order) => order.status === "in_progress",
+        );
+        const reviews = await Promise.allSettled(
+          activeOrders.map(async (order) => {
+            const response = await fetch(
+              `${API_URL}/api/work-orders/${order._id}/submissions`,
+              { headers: { Authorization: `Bearer ${businessToken}` } },
+            );
+            const data = await response.json().catch(() => null);
+            if (!response.ok || !Array.isArray(data))
+              throw new Error("Unable to load submissions");
+            return {
+              id: order._id,
+              pending: data.some((s) => s.status === "pending_review") ? 1 : 0,
+            };
+          }),
+        );
+        if (!cancelled)
+          setSubmissionCounts(
+            Object.fromEntries(
+              reviews
+                .filter((r) => r.status === "fulfilled")
+                .map((r) => [r.value.id, r.value.pending]),
+            ),
+          );
 
         setApplicantErrors(nextErrors);
       } catch (err) {
@@ -328,7 +347,10 @@ function BusinessDashboard() {
     },
     { label: "In progress", value: inProgressCount },
     { label: "Completed", value: completedCount },
-    { label: "Awaiting review", value: Object.values(submissionCounts).reduce((sum, n) => sum + n, 0) },
+    {
+      label: "Awaiting review",
+      value: Object.values(submissionCounts).reduce((sum, n) => sum + n, 0),
+    },
   ];
 
   function handleReviewApplicants(orderId) {
@@ -455,6 +477,7 @@ function BusinessDashboard() {
           </Link>
 
           <Link to="/businesses">Post a Work Order</Link>
+          {/* Messages are accessed from each work order below. */}
 
           <ProfileDropdown
             role="business"
@@ -650,7 +673,12 @@ function BusinessDashboard() {
                         </button>
                       )}
                       {order.status !== "draft" && (
-                        <Link to={`/business/work-orders/${order._id}/messages`} className="business-dashboard-outline">Messages</Link>
+                        <Link
+                          to={`/business/work-orders/${order._id}/messages`}
+                          className="business-dashboard-outline"
+                        >
+                          Messages
+                        </Link>
                       )}
                       {order.status === "in_progress" && (
                         <Link
@@ -803,6 +831,15 @@ function BusinessDashboard() {
                               : "Reject"}
                           </button>
                         </>
+                      )}
+                      {application.status === "accepted" && (
+                        <Link
+                          to={`/business/work-orders/${selectedOrder._id}/messages?studentId=${student._id}`}
+                          className="business-dashboard-accept"
+                        >
+                          {" "}
+                          Message Student
+                        </Link>
                       )}
                     </article>
                   );

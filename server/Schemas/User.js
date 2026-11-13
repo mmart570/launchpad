@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 // User Schema: Defines the structure for both student and business users

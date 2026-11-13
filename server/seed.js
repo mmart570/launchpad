@@ -8,7 +8,7 @@ const Session = require("./Schemas/session.js");
 const MONGODB_URI = process.env.MONGODB_URI;
 const dbName = process.env.MONGO_DB_NAME || "Launchpad";
 
- const mockWorkOrders = [
+const mockWorkOrders = [
   {
     seedKey: "workOrder1",
     title: "Finishing up Launchpad",
@@ -27,67 +27,79 @@ const dbName = process.env.MONGO_DB_NAME || "Launchpad";
     status: "open",
     deadline: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
   },
- ];
+];
 
- async function seed() {
-
+async function seed() {
   if (!MONGODB_URI) {
-    throw new Error ("MONGODB_URI is required.");
+    throw new Error("MONGODB_URI is required.");
   }
 
   await mongoose.connect(MONGODB_URI, { dbName });
   console.log("Connected to MongoDB");
-  const passwordHash = await bcrypt.hash("secrets567",10);
+  const passwordHash = await bcrypt.hash("secrets567", 10);
 
-  const businessUser = await User.findOneAndUpdate( 
-    { email: "kirby@frontier.com"},
+  const businessUser = await User.findOneAndUpdate(
+    { email: "kirby@frontier.com" },
     {
       $set: {
-        email: "kirby@frontier.com", passwordHash, role: "business",
+        email: "kirby@frontier.com",
+        passwordHash,
+        role: "business",
         businessProfile: {
-          companyName: "Kirby Performance", projectLead: "Bruce Wayne", industry: "Defense Engineering", companyWebsite: "https://kirbyperformance.com", companyNum:"760-900-4241",
+          companyName: "Kirby Performance",
+          projectLead: "Bruce Wayne",
+          industry: "Defense Engineering",
+          companyWebsite: "https://kirbyperformance.com",
+          companyNum: "760-900-4241",
         },
       },
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 
   const studentUser = await User.findOneAndUpdate(
-    { email: "newstudent@uni.edu" }, 
+    { email: "newstudent@uni.edu" },
     {
       $set: {
-        email: "newstudent@uni.edu", passwordHash, role: "student", 
+        email: "newstudent@uni.edu",
+        passwordHash,
+        role: "student",
         studentProfile: {
-          firstName: "The", lastName: "Joker", major: "Computer Science", skills: ["React", "MongoDB", "Node.js", "HTML", "CSS"],
+          firstName: "The",
+          lastName: "Joker",
+          major: "Computer Science",
+          skills: ["React", "MongoDB", "Node.js", "HTML", "CSS"],
         },
       },
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 
   await WorkOrder.deleteMany({});
 
   const ordersToInsert = mockWorkOrders.map((order) => ({
-    ...order, businessId: businessUser._id,
+    ...order,
+    businessId: businessUser._id,
   }));
 
   await WorkOrder.create(ordersToInsert);
 
- const exToken = "testing-token456";
- await Session.findOneAndUpdate(
-  { token: exToken },
-  {
-    $set: {
-      token: exToken, userId: studentUser._id,
+  const exToken = "testing-token456";
+  await Session.findOneAndUpdate(
+    { token: exToken },
+    {
+      $set: {
+        token: exToken,
+        userId: studentUser._id,
+      },
     },
-  },
-  { upsert: true, new: true }
- );
+    { upsert: true, new: true },
+  );
 
- await mongoose.disconnect();
+  await mongoose.disconnect();
 }
 
 seed().catch((err) => {
-  console.error('Failed to seed MongoDB', err.message);
+  console.error("Failed to seed MongoDB", err.message);
   process.exit(1);
 });

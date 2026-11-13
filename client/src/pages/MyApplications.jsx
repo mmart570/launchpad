@@ -293,13 +293,13 @@ function MyApplications() {
                     {application.status === "accepted" &&
                       workOrder?.status === "in_progress" &&
                       workOrderId && (
-                      <Link
-                        to={`/student/work-orders/${workOrderId}/submit`}
-                        className="my-applications-submit-work"
-                      >
-                        Submit Work
-                      </Link>
-                    )}
+                        <Link
+                          to={`/student/work-orders/${workOrderId}/submit`}
+                          className="my-applications-submit-work"
+                        >
+                          Submit Work
+                        </Link>
+                      )}
                   </article>
                 );
               })

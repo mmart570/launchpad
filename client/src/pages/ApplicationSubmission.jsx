@@ -64,7 +64,10 @@ function ApplicationSubmission() {
     async function loadMyApplication() {
       const session = getStudentSession();
       if (!session) {
-        if (!cancelled) { setCheckingApplication(false); setApplicationError("Please log in with your student account."); }
+        if (!cancelled) {
+          setCheckingApplication(false);
+          setApplicationError("Please log in with your student account.");
+        }
         return;
       }
       try {
@@ -73,11 +76,15 @@ function ApplicationSubmission() {
         });
         const data = await response.json().catch(() => null);
         if (!response.ok || !Array.isArray(data)) {
-          throw new Error(data?.error || "Unable to check existing applications.");
+          throw new Error(
+            data?.error || "Unable to check existing applications.",
+          );
         }
-        const existing = data.find((item) =>
-          String(item.workOrderId?._id || item.workOrderId) === String(id)
-        ) || null;
+        const existing =
+          data.find(
+            (item) =>
+              String(item.workOrderId?._id || item.workOrderId) === String(id),
+          ) || null;
         if (!cancelled) {
           setExistingApplication(existing);
           if (existing) {
@@ -94,9 +101,10 @@ function ApplicationSubmission() {
       }
     }
     loadMyApplication();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
-
 
   // Load the real work order from MongoDB.
   useEffect(() => {
@@ -140,7 +148,8 @@ function ApplicationSubmission() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (submitting || submitted || checkingApplication || applicationError) return;
+    if (submitting || submitted || checkingApplication || applicationError)
+      return;
     if (existingApplication && existingApplication.status !== "pending") {
       return setNotice("Only pending applications can be edited.");
     }
@@ -253,7 +262,11 @@ function ApplicationSubmission() {
           {!submitted && (
             <section className="application-submission-section">
               <div className="application-submission-card">
-                <h1>{existingApplication ? "Edit application" : "Apply for this work order"}</h1>
+                <h1>
+                  {existingApplication
+                    ? "Edit application"
+                    : "Apply for this work order"}
+                </h1>
 
                 <div className="application-submission-divider" />
 
@@ -276,11 +289,17 @@ function ApplicationSubmission() {
                   </div>
                 </div>
 
-                {checkingApplication && <p role="status">Checking your application...</p>}
-                {applicationError && <p role="alert">{applicationError}</p>}
-                {existingApplication?.status !== "pending" && existingApplication && (
-                  <p role="status">Your application has been {existingApplication.status}. It can no longer be edited.</p>
+                {checkingApplication && (
+                  <p role="status">Checking your application...</p>
                 )}
+                {applicationError && <p role="alert">{applicationError}</p>}
+                {existingApplication?.status !== "pending" &&
+                  existingApplication && (
+                    <p role="status">
+                      Your application has been {existingApplication.status}. It
+                      can no longer be edited.
+                    </p>
+                  )}
                 <form onSubmit={handleSubmit}>
                   <div className="application-submission-field">
                     <label htmlFor="application-note">
@@ -297,7 +316,13 @@ function ApplicationSubmission() {
                       }}
                       rows={5}
                       required
-                      disabled={submitting || checkingApplication || !!applicationError || (existingApplication && existingApplication.status !== "pending")}
+                      disabled={
+                        submitting ||
+                        checkingApplication ||
+                        !!applicationError ||
+                        (existingApplication &&
+                          existingApplication.status !== "pending")
+                      }
                     />
                   </div>
 
@@ -316,7 +341,13 @@ function ApplicationSubmission() {
                         setNotice("");
                       }}
                       required
-                      disabled={submitting || checkingApplication || !!applicationError || (existingApplication && existingApplication.status !== "pending")}
+                      disabled={
+                        submitting ||
+                        checkingApplication ||
+                        !!applicationError ||
+                        (existingApplication &&
+                          existingApplication.status !== "pending")
+                      }
                     />
                   </div>
 
@@ -328,13 +359,18 @@ function ApplicationSubmission() {
                       loadingOrder ||
                       checkingApplication ||
                       !!applicationError ||
-                      (existingApplication && existingApplication.status !== "pending") ||
+                      (existingApplication &&
+                        existingApplication.status !== "pending") ||
                       !!orderError ||
                       !workOrder ||
                       (!existingApplication && workOrder.status !== "open")
                     }
                   >
-                    {submitting ? "Saving..." : existingApplication ? "Save changes" : "Submit application"}
+                    {submitting
+                      ? "Saving..."
+                      : existingApplication
+                        ? "Save changes"
+                        : "Submit application"}
                   </button>
 
                   {notice && (
@@ -362,7 +398,11 @@ function ApplicationSubmission() {
                   ✓
                 </div>
 
-                <h2>{existingApplication ? "Application updated!" : "Application submitted!"}</h2>
+                <h2>
+                  {existingApplication
+                    ? "Application updated!"
+                    : "Application submitted!"}
+                </h2>
 
                 <p className="application-confirmation-description">
                   {existingApplication

@@ -176,7 +176,11 @@ export default function BusinessSubmissionReview() {
         </Link>
         <nav>
           <Link to="/business-dashboard">Dashboard</Link>
-          <ProfileDropdown role="business" initials="BU" avatarClassName="ws-business-avatar" />
+          <ProfileDropdown
+            role="business"
+            initials="BU"
+            avatarClassName="ws-business-avatar"
+          />
         </nav>
       </header>
       <style>{`
@@ -217,7 +221,8 @@ export default function BusinessSubmissionReview() {
             </p>
           </section>
         )}
-        {!loading && order &&
+        {!loading &&
+          order &&
           submissions.map((submission, index) => (
             <section className="ws-card" key={submission._id}>
               <div className="ws-card-heading">

@@ -37,9 +37,6 @@ const applicationSchema = new mongoose.Schema(
 );
 
 // Ensure a student can only apply once to the same work order
-applicationSchema.index(
-  { workOrderId: 1, studentId: 1 },
-  { unique: true },
-);
+applicationSchema.index({ workOrderId: 1, studentId: 1 }, { unique: true });
 
 module.exports = mongoose.model("Application", applicationSchema);

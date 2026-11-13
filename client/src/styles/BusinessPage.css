@@ -309,9 +309,7 @@
   cursor: pointer;
 }
 
-.business-card-body
-  .business-empty-submission-option
-  input[type="checkbox"] {
+.business-card-body .business-empty-submission-option input[type="checkbox"] {
   appearance: auto;
   width: 18px;
   height: 18px;

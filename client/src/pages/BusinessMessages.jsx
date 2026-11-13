@@ -1,4 +1,3 @@
-
 /*
 ╔════════════════════════════════════════════════════════════════════════════╗
 ║                       BusinessMessages.jsx                                 ║
@@ -27,9 +26,8 @@ function getToken() {
   for (const storage of [sessionStorage, localStorage]) {
     try {
       if (
-        JSON.parse(
-          storage.getItem("launchpad_user") || "{}"
-        ).role === "business"
+        JSON.parse(storage.getItem("launchpad_user") || "{}").role ===
+        "business"
       ) {
         const token = storage.getItem("launchpad_token");
         if (token) return token;
@@ -74,50 +72,33 @@ export default function BusinessMessages() {
           Authorization: `Bearer ${token}`,
         };
 
-        const [ordersResponse, conversationsResponse] =
-          await Promise.all([
-            fetch(`${API_URL}/api/business/work-orders`, {
-              headers,
-              signal: controller.signal,
-            }),
-            fetch(
-              `${API_URL}/api/work-orders/${id}/conversations`,
-              {
-                headers,
-                signal: controller.signal,
-              }
-            ),
-          ]);
+        const [ordersResponse, conversationsResponse] = await Promise.all([
+          fetch(`${API_URL}/api/business/work-orders`, {
+            headers,
+            signal: controller.signal,
+          }),
+          fetch(`${API_URL}/api/work-orders/${id}/conversations`, {
+            headers,
+            signal: controller.signal,
+          }),
+        ]);
 
-        const orders = await ordersResponse
-          .json()
-          .catch(() => null);
+        const orders = await ordersResponse.json().catch(() => null);
 
-        const people = await conversationsResponse
-          .json()
-          .catch(() => null);
+        const people = await conversationsResponse.json().catch(() => null);
 
         if (!ordersResponse.ok || !Array.isArray(orders)) {
           throw new Error("Unable to load work order.");
         }
 
-        if (
-          !conversationsResponse.ok ||
-          !Array.isArray(people)
-        ) {
-          throw new Error(
-            people?.error || "Unable to load conversations."
-          );
+        if (!conversationsResponse.ok || !Array.isArray(people)) {
+          throw new Error(people?.error || "Unable to load conversations.");
         }
 
-        const found = orders.find(
-          (o) => String(o._id) === String(id)
-        );
+        const found = orders.find((o) => String(o._id) === String(id));
 
         if (!found) {
-          throw new Error(
-            "This work order does not belong to your account."
-          );
+          throw new Error("This work order does not belong to your account.");
         }
 
         if (!controller.signal.aborted) {
@@ -125,12 +106,9 @@ export default function BusinessMessages() {
           setConversations(people);
 
           setStudentId((current) =>
-            people.some(
-              (p) =>
-                String(p.studentId) === String(current)
-            )
+            people.some((p) => String(p.studentId) === String(current))
               ? current
-              : String(people[0]?.studentId || "")
+              : String(people[0]?.studentId || ""),
           );
         }
       } catch (err) {
@@ -165,23 +143,19 @@ export default function BusinessMessages() {
     try {
       const response = await fetch(
         `${API_URL}/api/work-orders/${id}/messages?studentId=${encodeURIComponent(
-          selectedId
+          selectedId,
         )}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
-      const result = await response
-        .json()
-        .catch(() => null);
+      const result = await response.json().catch(() => null);
 
       if (!response.ok || !Array.isArray(result)) {
-        throw new Error(
-          result?.error || "Unable to load messages."
-        );
+        throw new Error(result?.error || "Unable to load messages.");
       }
 
       setMessages(result);
@@ -223,17 +197,13 @@ export default function BusinessMessages() {
             studentId,
             body: body.trim(),
           }),
-        }
+        },
       );
 
-      const result = await response
-        .json()
-        .catch(() => ({}));
+      const result = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(
-          result.error || "Unable to send message."
-        );
+        throw new Error(result.error || "Unable to send message.");
       }
 
       setBody("");
@@ -250,54 +220,33 @@ export default function BusinessMessages() {
   return (
     <div className="work-details-page">
       <header className="work-details-navbar">
-        <Link
-          to="/business-dashboard"
-          className="work-details-logo"
-        >
+        <Link to="/business-dashboard" className="work-details-logo">
           Launch<span>Pad</span>
         </Link>
 
         <nav>
-          <Link
-            to="/business-dashboard"
-            className="work-details-back"
-          >
+          <Link to="/business-dashboard" className="work-details-back">
             Business dashboard
           </Link>{" "}
-
-          <ProfileDropdown
-            role="business"
-            initials="BU"
-          />
+          <ProfileDropdown role="business" initials="BU" />
         </nav>
       </header>
 
       <main className="work-details-main">
-        <Link to="/business-dashboard">
-          ← Back to dashboard
-        </Link>
+        <Link to="/business-dashboard">← Back to dashboard</Link>
 
         <h1>Work order messages</h1>
         <p>{order?.title || "Work order"}</p>
 
-        {loading && (
-          <p role="status">
-            Loading conversations...
-          </p>
-        )}
+        {loading && <p role="status">Loading conversations...</p>}
 
         {error && (
-          <p
-            role="alert"
-            style={{ color: "#b42318" }}
-          >
+          <p role="alert" style={{ color: "#b42318" }}>
             {error}
           </p>
         )}
 
-        {notice && (
-          <p role="status">{notice}</p>
-        )}
+        {notice && <p role="status">{notice}</p>}
 
         {!loading && order && (
           <section className="work-info-card work-messages-panel">
@@ -325,46 +274,32 @@ export default function BusinessMessages() {
                     }}
                   >
                     {conversations.map((person) => (
-                      <option
-                        key={person.studentId}
-                        value={person.studentId}
-                      >
-                        {person.name} (
-                        {person.applicationStatus})
+                      <option key={person.studentId} value={person.studentId}>
+                        {person.name} ({person.applicationStatus})
                       </option>
                     ))}
                   </select>
 
-                  <div
-                    aria-live="polite"
-                    style={{ margin: "20px 0" }}
-                  >
-                    {messages.length === 0 && (
-                      <p>No messages yet.</p>
-                    )}
+                  <div aria-live="polite" style={{ margin: "20px 0" }}>
+                    {messages.length === 0 && <p>No messages yet.</p>}
 
                     {messages.map((message) => (
                       <article
                         key={message._id}
                         style={{
-                          borderBottom:
-                            "1px solid #ddd",
+                          borderBottom: "1px solid #ddd",
                           padding: "12px 0",
                         }}
                       >
                         <strong>
-                          {message.senderRole ===
-                          "business"
+                          {message.senderRole === "business"
                             ? "You"
                             : "Student"}
                         </strong>{" "}
                         ·{" "}
                         <small>
-                          {new Date(
-                            message.createdAt
-                          ).toLocaleString()}
+                          {new Date(message.createdAt).toLocaleString()}
                         </small>
-
                         <p
                           style={{
                             whiteSpace: "pre-wrap",
@@ -378,18 +313,14 @@ export default function BusinessMessages() {
                   </div>
 
                   <form onSubmit={send}>
-                    <label htmlFor="business-message-text">
-                      Reply
-                    </label>
+                    <label htmlFor="business-message-text">Reply</label>
 
                     <textarea
                       id="business-message-text"
                       rows={4}
                       maxLength={5000}
                       value={body}
-                      onChange={(e) =>
-                        setBody(e.target.value)
-                      }
+                      onChange={(e) => setBody(e.target.value)}
                       style={{
                         display: "block",
                         width: "100%",
@@ -401,22 +332,16 @@ export default function BusinessMessages() {
                     <button
                       type="submit"
                       className="work-apply-button"
-                      disabled={
-                        busy || !body.trim()
-                      }
+                      disabled={busy || !body.trim()}
                     >
-                      {busy
-                        ? "Sending..."
-                        : "Send message"}
+                      {busy ? "Sending..." : "Send message"}
                     </button>
 
                     <button
                       type="button"
                       className="work-action-outline"
                       style={{ marginLeft: 10 }}
-                      onClick={() =>
-                        loadMessages(studentId)
-                      }
+                      onClick={() => loadMessages(studentId)}
                     >
                       Refresh messages
                     </button>
