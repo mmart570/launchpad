@@ -13,7 +13,6 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
-const Thread = require("./Schemas/Thread.js");
 
 // Import database schemas
 const Session = require("./Schemas/session.js");
@@ -870,21 +869,6 @@ function createApp() {
           application.status = "accepted";
           await application.save();
 
-          await Thread.findOneAndUpdate(
-            {
-              workOrderId: workOrder._id,
-            },
-            {
-              $setOnInsert: {
-                workOrderId: workOrder._id,
-                businessId: workOrder.businessId,
-                studentId: application.studentId,
-                messages: [],
-              },
-            },
-            { upsert: true, new: true },
-          );
-
           // Reject all other pending applications for this work order
           await Application.updateMany(
             {
@@ -1375,100 +1359,6 @@ function createApp() {
     } catch (err) {
       console.error("Submission history error:", err);
       return res.status(500).json({ error: "Unable to load submissions." });
-    }
-  });
-
-  // Fetch message threads for user
-  app.get("/api/threads", requireUser, async (req, res) => {
-    try {
-      const query =
-        req.user.role === "business"
-          ? { businessId: req.userId }
-          : { studentId: req.userId };
-
-      const threads = await Thread.find(query)
-        .populate("workOrderId", "title status")
-        .populate("businessId", "businessProfile.companyName email")
-        .populate(
-          "studentId",
-          "studentProfile.firstName studentProfile.lastName email",
-        )
-        .sort({ updatedAt: -1 });
-
-      const formatted = threads.map((t) => {
-        const isBusiness = req.user.role === "business";
-        const firstName = t.studentId?.studentProfile?.firstName || "";
-        const lastName = t.studentId?.studentProfile?.lastName || "";
-        const studentName = `${firstName} ${lastName}`.trim();
-
-        const otherPerson = isBusiness
-          ? studentName || t.studentId?.email || "Student"
-          : t.businessId?.businessProfile?.companyName ||
-            t.businessId?.email ||
-            "Business";
-
-        return {
-          _id: t._id,
-          workOrderId: t.workOrderId?._id,
-          workOrderTitle: t.workOrderId?.title || "Work Order",
-          otherPerson,
-          messages: t.messages || [],
-        };
-      });
-
-      return res.json(formatted);
-    } catch (error) {
-      console.error("Fetch threads error:", error);
-      return res.status(500).json({ error: "Unable to load messages." });
-    }
-  });
-
-  // Posts new message to thread
-  app.post("/api/threads/:id/messages", requireUser, async (req, res) => {
-    try {
-      if (!validId(req.params.id)) {
-        return res.status(400).json({ error: "Invalid thread ID." });
-      }
-
-      const text =
-        typeof req.body.text === "string" ? req.body.text.trim() : "";
-      if (!text) {
-        return res.status(400).json({ error: "Message cannot be empty." });
-      }
-      if (text.length > 2000) {
-        return res
-          .status(400)
-          .json({ error: "Message is too long (max 2000 characters)." });
-      }
-
-      const thread = await Thread.findById(req.params.id);
-      if (!thread) {
-        return res.status(404).json({ error: "Conversation not found." });
-      }
-
-      // Verify the logged-in user is either the business or student on this thread
-      const isMember =
-        String(thread.businessId) === req.userId ||
-        String(thread.studentId) === req.userId;
-      if (!isMember) {
-        return res
-          .status(403)
-          .json({ error: "Not authorized to post in this conversation." });
-      }
-
-      thread.messages.push({
-        senderId: req.userId,
-        text,
-        sentAt: new Date(),
-      });
-
-      await thread.save();
-
-      const savedMessage = thread.messages[thread.messages.length - 1];
-      return res.status(201).json(savedMessage);
-    } catch (error) {
-      console.error("Send message error:", error);
-      return res.status(500).json({ error: "Unable to send message." });
     }
   });
 
