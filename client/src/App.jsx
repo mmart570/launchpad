@@ -17,6 +17,7 @@ import StudentPublicProfile from "./pages/StudentPublicProfile";
 import WorkOrderSuccess from "./pages/WorkOrderSuccess";
 import StudentWorkSubmission from "./pages/StudentWorkSubmission";
 import BusinessSubmissionReview from "./pages/BusinessSubmissionReview";
+import Messages from "./pages/Messages";
 
 const API_URL = "http://localhost:3000";
 
@@ -236,6 +237,10 @@ function App() {
 
         {/* Student work submission page */}
         <Route path="/business/work-orders/:id/submissions" element={<BusinessSubmissionReview />} />
+          
+        {/* Messages page*/}
+        <Route path="/messages" element ={<Messages />}/>
+
       </Routes>
     </BrowserRouter>
   );

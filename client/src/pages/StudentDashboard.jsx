@@ -77,6 +77,7 @@ function StudentDashboard() {
         <nav className="dashboard-nav-links">
           <Link to="/dashboard">Dashboard</Link>
           <Link to="/my-applications">My Applications</Link>
+          <Link to="/messages"> Messages</Link>
 
           <ProfileDropdown
             role="student"

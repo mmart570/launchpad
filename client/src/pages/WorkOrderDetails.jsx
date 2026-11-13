@@ -1,9 +1,28 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import "../styles/WorkOrderDetails.css";
 import BusinessInformation from "../components/BusinessInformation";
 
 const API_URL = "http://localhost:3000";
+
+function getSession() {
+  for (const storage of [sessionStorage, localStorage]) {
+    const token = storage.getItem("launchpad_token");
+    const userText = storage.getItem("launchpad_user");
+    if (!token || !userText) {
+      continue;
+    }
+    try {
+      const user = JSON.parse(userText);
+      if (user?.userId && user?.role) {
+        return { token, user };
+      }
+    } catch {
+      console.log("Ignoring invalid case");
+    }
+  }
+  return null;
+}
 
 function formatMoney(value) {
   const amount = Number(value);
@@ -36,9 +55,18 @@ function WorkOrderDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [activeTab, setActiveTab] = useState("details");
+  const [searchParams] = useSearchParams ();
+  const [activeTab, setActiveTab] = useState( searchParams.get("tab") === messages ? "messages" : "details");
   const [notice, setNotice] = useState("");
   const [showBusinessInfo, setShowBusinessInfo] = useState(false);
+
+  const [thread, setThread] = useState(null);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [msgText, setMsgText] = useState("");
+  const messagesEndRef = useRef(null);
+  const session = getSession();
+  const token = session?.token;
+  const currentUserId = session?.user?.userId;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -87,6 +115,63 @@ function WorkOrderDetails() {
 
     return () => controller.abort();
   }, [id]);
+
+  useEffect(() => {
+    if (!token || !id) {
+      return;
+    } 
+    setThreadLoading(true);
+
+    fetch(`${API_URL}/api/threads`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((threads) => {
+        const match = Array.isArray(threads)
+          ? threads.find((t) => String(t.workOrderId) === String(id))
+          : null;
+        setThread(match || null);
+      })
+      .catch((err) => console.error("Failed to load thread:", err))
+      .finally(() => setThreadLoading(false));
+  }, [id, token]);
+
+  useEffect(() => {
+    if (activeTab === "messages") {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [thread?.messages?.length, activeTab]);
+
+  async function handleSendWorkOrderMessage(e) {
+    e.preventDefault();
+    const trimmed = msgText.trim();
+    if (!trimmed || !thread?._id) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/threads/${thread._id}/messages`, 
+        {method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, },
+        body: JSON.stringify({ text: trimmed }),
+      });
+
+      const saved = await res.json();
+      if (!res.ok) {
+        alert(saved.error || "Failed to send message.");
+        return;
+      }
+
+      setThread((prev) => ({
+        ...prev,
+        messages: [...(prev.messages || []), saved],
+      }));
+      setMsgText("");
+    } catch (err) {
+      console.error("Send message failed:", err);
+      alert("Could not reach the server.");
+    }
+  }
+
 
   function handleMessage() {
     setActiveTab("messages");
@@ -156,19 +241,21 @@ function WorkOrderDetails() {
 
           <main className="work-details-main">
             <div className="work-details-actions">
+            {session?.user?.role !== "business" && (
               <Link
                 to={`/work-orders/${id}/apply`}
                 className="work-apply-button"
               >
                 Apply for this work order
               </Link>
+            )}
 
               <button
                 type="button"
                 className="work-action-outline"
                 onClick={handleMessage}
               >
-                Message business
+              {session?.user?.role === "business" ? "Message student" : "Message business"}
               </button>
 
               <button
@@ -415,13 +502,52 @@ function WorkOrderDetails() {
                 </aside>
               </div>
             ) : (
-              <section className="work-info-card work-messages-panel">
-                <h2>Messages</h2>
+<section className="work-info-card work-messages-panel">
+            <h2>Messages {thread ? `(${thread.otherPerson})` : ""}</h2>
+            <div className="work-info-body">
+              {!session ? (
+                <p>Not logged in. <Link to="/login">Log in</Link></p>
+              ) : threadLoading ? (
+                <p>Loading messages...</p>
+              ) : !thread ? (
+                <p>No active thread yet (accept an application for this work order first).</p>
+              ) : (
+                <div>
+                  <div style={{ border: "1px solid #ccc", padding: "12px", maxHeight: "250px", overflowY: "auto", marginBottom: "10px" }}>
+                    {(thread.messages || []).length === 0 ? (
+                      <p>No messages yet. Say hello!</p>
+                    ) : (
+                      thread.messages.map((m, i) => (
+                        <p key={m._id || i} style={{ margin: "6px 0" }}>
+                          <strong>
+                            {String(m.senderId) === String(currentUserId) ? "Me" : thread.otherPerson}:
+                          </strong>{" "}
+                          {m.text}{" "}
+                          {m.sentAt && (
+                            <small>
+                              ({new Date(m.sentAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })})
+                            </small>
+                          )}
+                        </p>
+                      ))
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
 
-                <div className="work-info-body">
-                  <p>Messaging is not connected to the backend yet.</p>
+                  <form onSubmit={handleSendWorkOrderMessage}>
+                    <input
+                      type="text"
+                      value={msgText}
+                      onChange={(e) => setMsgText(e.target.value)}
+                      placeholder="Write a message..."
+                      style={{ width: "75%", marginRight: "8px", padding: "6px" }}
+                    />
+                    <button type="submit">Send</button>
+                  </form>
                 </div>
-              </section>
+              )}
+            </div>
+          </section>
             )}
           </main>
 

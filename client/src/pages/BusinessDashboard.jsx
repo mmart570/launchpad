@@ -423,6 +423,7 @@ function BusinessDashboard() {
           </Link>
 
           <Link to="/businesses">Post a Work Order</Link>
+          <Link to="/messages"> Messages </Link>
 
           <ProfileDropdown
             role="business"
@@ -762,6 +763,10 @@ function BusinessDashboard() {
                             Reject
                           </button>
                         </>
+                      )}
+                      {application.status === "accepted" && (
+                        <Link to={`/work-orders/${selectedOrder._id}?tab=messages`} 
+                        className = "business-dashboard-accept"> Message Student</Link>
                       )}
                     </article>
                   );
