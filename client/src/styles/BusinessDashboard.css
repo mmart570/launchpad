@@ -186,6 +186,7 @@
   padding: 12px 22px;
   border-bottom: 1px solid #e2e8f0;
   box-sizing: border-box;
+  flex-wrap: wrap;
 }
 
 /* Remove the divider after the final row in either management panel. */
@@ -205,6 +206,9 @@
   margin: 0 0 3px;
   font-size: 15px;
   font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .business-dashboard-order-info p,

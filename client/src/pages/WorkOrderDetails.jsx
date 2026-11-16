@@ -366,7 +366,7 @@ function WorkOrderDetails() {
   return (
     <div className="work-details-page">
       <header className="work-details-navbar">
-        <Link to="/" className="work-details-logo">
+        <Link to={session?.role === "business" ? "/business-dashboard" : session?.role === "student" ?"/dashboard" : "/"} className="work-details-logo">
           Launch<span>Pad</span>
         </Link>
 
@@ -725,17 +725,40 @@ function WorkOrderDetails() {
                     </div>
 
                     <div className="work-payment-line">
-                      <strong>Additional Charges ⓘ</strong>
+                      <strong>Additional Charges {" "}
+                        <span
+                          title="Extra project related expenses."
+                          style={{ cursor: "help" }}
+                        >
+                        ⓘ
+                        </span> 
+                      </strong>
                       <span>Not specified</span>
                     </div>
 
                     <div className="work-payment-line">
-                      <strong>Service Charges ⓘ</strong>
+                      <strong>
+                        Service Charges {" "}
+                        <span
+                        title="Launchpad related service fee."
+                        style={{ cursor: "help" }}
+                        >
+                        ⓘ
+                        </span>
+                      </strong>
                       <span>Not specified</span>
                     </div>
 
                     <div className="work-payment-line">
-                      <strong>Taxes ⓘ</strong>
+                      <strong>
+                        Taxes {" "}
+                        <span
+                        title="Taxes may vary based on location!"
+                        style={{ cursor: "help" }}
+                        >
+                        ⓘ
+                        </span>
+                      </strong>
                       <span>Not specified</span>
                     </div>
                   </section>
