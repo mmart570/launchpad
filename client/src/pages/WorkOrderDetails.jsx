@@ -366,7 +366,7 @@ function WorkOrderDetails() {
   return (
     <div className="work-details-page">
       <header className="work-details-navbar">
-        <Link to={session?.role === "business" ? "/business-dashboard" : session?.role === "student" ?"/dashboard" : "/"} className="work-details-logo">
+        <Link to={(session?.role || session?.user?.role) === "business" ? "/business-dashboard" : (session?.role || session?.user?.role) === "student" ?"/dashboard" : "/"} className="work-details-logo">
           Launch<span>Pad</span>
         </Link>
 
@@ -374,7 +374,7 @@ function WorkOrderDetails() {
           {session && <NotificationBell role={session.role} />}
           <Link
             to={
-              session?.role === "business"
+              (session?.role || session?.user?.role) === "business"
                 ? "/business-dashboard"
                 : "/dashboard"
             }

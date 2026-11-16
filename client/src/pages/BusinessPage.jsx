@@ -366,7 +366,7 @@ function BusinessPage() {
   return (
     <div className="business-page">
       <header className="business-navbar">
-        <Link to="/" className="business-logo">
+        <Link to="/business-dashboard" className="business-logo">
           Launch<span>Pad</span>
           <small>for Business</small>
         </Link>
